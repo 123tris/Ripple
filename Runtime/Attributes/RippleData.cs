@@ -1,6 +1,9 @@
 ﻿using System;
 
-public class RippleData : Attribute
+namespace Ripple
 {
+    public class RippleData : Attribute
+    {
 
+    }
 }

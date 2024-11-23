@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
+using Ripple;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
-using UnityEngine.TextCore.Text;
 using UnityEngine;
 
 public class RippleWizard : OdinMenuEditorWindow
