@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
+using Ripple;
 
-[RippleData]
-[CreateAssetMenu(menuName = Config.EventMenu + "Integer")]
-public class IntEvent : GameEvent<int> { }
+namespace Ripple
+{
+    [RippleData]
+    [CreateAssetMenu(menuName = Config.EventMenu + "Integer")]
+    public class IntEvent : GameEvent<int> { }
+}

@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using Ripple;
 
 [CustomPropertyDrawer(typeof(BoolReference))]
 public class BoolReferenceDrawer : PropertyDrawer

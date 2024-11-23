@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
+using Ripple;
 
 public class AssetDropdownProcessor : OdinAttributeProcessor<MonoBehaviour>
 {

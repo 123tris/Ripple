@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu(menuName = "Events/Transform")]
-public class TransformEvent : GameEvent<Transform>
+namespace Ripple
 {
+    [CreateAssetMenu(menuName = "Events/Transform")]
+    public class TransformEvent : GameEvent<Transform>
+    {
 
+    }
 }

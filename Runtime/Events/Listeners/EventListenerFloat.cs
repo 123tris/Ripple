@@ -1,1 +1,4 @@
-public class EventListenerFloat : EventListener<float> {}
+namespace Ripple
+{
+    public class EventListenerFloat : EventListener<float> {}
+}

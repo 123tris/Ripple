@@ -1,20 +1,24 @@
+using Ripple;
 using UltEvents;
 using UnityEngine;
 
-public class EventListenerVoid : MonoBehaviour
+namespace Ripple
 {
-    [SerializeField]
-    private VoidEventSO _event;
-
-    [SerializeField]
-    private UltEvent _response;
-
-    void OnEnable() => _event.AddListener(OnEvent);
-
-    void OnDisable() => _event.RemoveListener(OnEvent);
-
-    private void OnEvent()
+    public class EventListenerVoid : MonoBehaviour
     {
-        _response?.Invoke();
+        [SerializeField]
+        private VoidEventSO _event;
+
+        [SerializeField]
+        private UltEvent _response;
+
+        void OnEnable() => _event.AddListener(OnEvent);
+
+        void OnDisable() => _event.RemoveListener(OnEvent);
+
+        private void OnEvent()
+        {
+            _response?.Invoke();
+        }
     }
 }

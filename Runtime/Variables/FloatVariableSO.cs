@@ -1,11 +1,14 @@
 using UnityEngine;
 
-[RippleData]
-[CreateAssetMenu(menuName = Config.VariableMenu + "Float")]
-public class FloatVariableSO : VariableSO<float>, INumericalVariable<float>
+namespace Ripple
 {
-    public void Add(float value)
+    [RippleData]
+    [CreateAssetMenu(menuName = Config.VariableMenu + "Float")]
+    public class FloatVariableSO : VariableSO<float>, INumericalVariable<float>
     {
-        CurrentValue += value;
+        public void Add(float value)
+        {
+            CurrentValue += value;
+        }
     }
 }

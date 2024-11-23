@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
+using Ripple;
 
-[RippleData]
-[CreateAssetMenu(menuName = Config.EventMenu + "Float")]
-public class FloatEvent : GameEvent<float> {}
+namespace Ripple
+{
+    [RippleData]
+    [CreateAssetMenu(menuName = Config.EventMenu + "Float")]
+    public class FloatEvent : GameEvent<float> {}
+}

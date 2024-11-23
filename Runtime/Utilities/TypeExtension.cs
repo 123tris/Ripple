@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-public static class TypeExtension
+internal static class TypeExtension
 {
     public static string[] GetSubclassNames(this Type type)
     {

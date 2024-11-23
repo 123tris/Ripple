@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
+using Ripple;
 
-[RippleData]
-[CreateAssetMenu(menuName = Config.EventMenu + "Bool")]
-public class BoolEvent : GameEvent<bool> { }
+namespace Ripple
+{
+    [RippleData]
+    [CreateAssetMenu(menuName = Config.EventMenu + "Bool")]
+    public class BoolEvent : GameEvent<bool> { }
+}

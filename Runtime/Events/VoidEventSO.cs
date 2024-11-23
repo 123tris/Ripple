@@ -2,30 +2,33 @@
 using UltEvents;
 using UnityEngine;
 
-[RippleData]
-[CreateAssetMenu(menuName = "Events/Void")]
-public class VoidEventSO : ScriptableObject
+namespace Ripple
 {
+    [RippleData]
+    [CreateAssetMenu(menuName = "Events/Void")]
+    public class VoidEventSO : ScriptableObject
+    {
 #if UNITY_EDITOR
-    [SerializeField, TextArea] private string _developerNotes;
+        [SerializeField, TextArea] private string _developerNotes;
 #endif
 
-    [SerializeField]
-    private UltEvent gameEvent;
+        [SerializeField]
+        private UltEvent gameEvent;
 
-    protected void OnEnable()
-    {
-        hideFlags = HideFlags.DontUnloadUnusedAsset;
+        protected void OnEnable()
+        {
+            hideFlags = HideFlags.DontUnloadUnusedAsset;
+        }
+
+        public void Invoke()
+        {
+            gameEvent?.Invoke();
+        }
+
+        public bool HasListeners => gameEvent != null;
+
+        public void AddListener(Action method) => gameEvent += method;
+
+        public void RemoveListener(Action method) => gameEvent -= method;
     }
-
-    public void Invoke()
-    {
-        gameEvent?.Invoke();
-    }
-
-    public bool HasListeners => gameEvent != null;
-
-    public void AddListener(Action method) => gameEvent += method;
-
-    public void RemoveListener(Action method) => gameEvent -= method;
 }

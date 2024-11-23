@@ -1,1 +1,4 @@
-public class EventListenerBool : EventListener<bool> {}
+namespace Ripple
+{
+    public class EventListenerBool : EventListener<bool> {}
+}
