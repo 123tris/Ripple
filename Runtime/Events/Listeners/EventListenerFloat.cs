@@ -1,0 +1,1 @@
+public class EventListenerFloat : EventListener<float> {}

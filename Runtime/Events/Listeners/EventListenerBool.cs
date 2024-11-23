@@ -1,0 +1,1 @@
+public class EventListenerBool : EventListener<bool> {}

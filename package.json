@@ -1,0 +1,18 @@
+{
+  "name": "com.metz.ripple",
+  "version": "0.1.0",
+  "displayName": "Ripple",
+  "description": "Lazy ScriptableObject framework",
+  "unity": "6000.0",
+  "keywords": [
+    "tools",
+    "extensions",
+    "workflow",
+    "editor"
+  ],
+  "author": {
+    "name": "Tristan Metz",
+    "email": "tristan.a.metz@gmail.com",
+    "url": "https://tristanmetz.software"
+  }
+}
