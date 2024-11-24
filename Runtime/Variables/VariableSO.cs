@@ -8,7 +8,7 @@ namespace Ripple
     public class VariableSO<T> : ScriptableObject
     {
 #if UNITY_EDITOR
-        [SerializeField, TextArea] private string _developerNotes;
+        [SerializeField, TextArea, HideInInlineEditors] private string _developerNotes;
 #endif
 
         [SerializeField, ShowIf("@UnityEngine.Application.isPlaying")]

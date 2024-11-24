@@ -1,16 +1,17 @@
 using System;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Ripple
 {
     [Serializable]
-    public class VariableReference<T>
+    public class VariableReference<T> : VariableReferenceBase
     {
         public bool useConstant = true;
 
         [SerializeField] private T _constantValue;
 
-        [SerializeField] private VariableSO<T> _variable;
+        [SerializeField,InlineEditor] private VariableSO<T> _variable;
 
         public VariableReference() { }
 
@@ -27,6 +28,8 @@ namespace Ripple
             return reference.Value;
         }
     }
+
+    public class VariableReferenceBase {}
 
     [Serializable] public class BoolReference : VariableReference<bool> { }
     [Serializable] public class FloatReference : VariableReference<float> { }

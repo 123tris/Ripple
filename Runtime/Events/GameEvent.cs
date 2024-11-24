@@ -5,10 +5,11 @@ using UnityEngine;
 
 namespace Ripple
 {
+    [InlineEditor]
     public class GameEvent<T> : ScriptableObject
     {
 #if UNITY_EDITOR
-        [SerializeField, TextArea] private string _developerNotes;
+        [SerializeField, TextArea(0,5, order = 5), HideInInlineEditors] private string _developerNotes;
 #endif
 
         [SerializeField]
