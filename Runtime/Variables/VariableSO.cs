@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Ripple
 {
+    [InlineEditor]
     public class VariableSO<T> : ScriptableObject
     {
 #if UNITY_EDITOR

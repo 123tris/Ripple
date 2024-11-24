@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Ripple
 {
+    [Serializable]
     public class VariableReference<T>
     {
         public bool useConstant = true;
