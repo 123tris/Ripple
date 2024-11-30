@@ -1,8 +1,5 @@
-﻿using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities.Editor;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Ripple
 {
