@@ -1,4 +1,6 @@
-﻿using UnityEditor;
+﻿using Sirenix.OdinInspector.Editor;
+using Sirenix.Utilities.Editor;
+using UnityEditor;
 using UnityEngine;
 
 namespace Ripple
@@ -9,8 +11,7 @@ namespace Ripple
         /// <summary>
         /// Options to display in the popup to select constant or variable.
         /// </summary>
-        private readonly string[] popupOptions =
-            { "Use Constant", "Use Variable" };
+        private readonly string[] popupOptions = { "Use Constant", "Use Variable" };
 
         /// <summary> Cached style to use to draw the popup button. </summary>
         private GUIStyle popupStyle;
@@ -57,7 +58,7 @@ namespace Ripple
         }
     }
 
-    //public class VariableReferenceDrawerOdin<T> : OdinValueDrawer<T> where T : VariableReference<T>
+    //public class VariableReferenceDrawerOdin<T> : OdinValueDrawer<T> where T : VariableReferenceBase
     //{
     //    private InspectorProperty _useConstant;
     //    private InspectorProperty _constantValue;
@@ -85,9 +86,8 @@ namespace Ripple
 
     //        Rect rect = EditorGUILayout.GetControlRect();
     //        //label = EditorGUI.BeginProperty(rect, label, ValueEntry);
+    //        EditorGUILayout.BeginHorizontal();
     //        rect = EditorGUI.PrefixLabel(rect, label);
-
-    //        EditorGUI.BeginChangeCheck();
 
     //        // Calculate rect for configuration button
     //        Rect buttonRect = new(rect);
@@ -95,13 +95,16 @@ namespace Ripple
     //        buttonRect.width = _popupStyle.fixedWidth + _popupStyle.margin.right;
     //        rect.xMin = buttonRect.xMax;
 
-    //        // Store old indent level and set it to 0, the PrefixLabel takes care of it
-    //        //int indent = EditorGUI.indentLevel;
-    //        //EditorGUI.indentLevel = 0;
+    //        bool useConstant = (bool) _useConstant.ValueEntry.WeakSmartValue;
 
-    //        int result = EditorGUI.Popup(buttonRect, (bool)_useConstant.ValueEntry.WeakSmartValue ? 0 : 1, _popupOptions, _popupStyle);
+    //        int result = EditorGUI.Popup(buttonRect, useConstant ? 0 : 1, _popupOptions, _popupStyle);
+
     //        _useConstant.ValueEntry.WeakSmartValue = result == 0;
-    //        //EditorGUI.indentLevel = indent;
+    //        if (useConstant)
+    //            _constantValue.Draw(GUIContent.none);
+    //        else
+    //            _variable.Draw(GUIContent.none);
+    //        EditorGUILayout.EndHorizontal();
     //    }
     //}
 }

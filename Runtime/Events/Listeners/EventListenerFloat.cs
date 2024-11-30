@@ -1,4 +1,7 @@
+using UnityEngine;
+
 namespace Ripple
 {
-    public class EventListenerFloat : EventListener<float> {}
+    [AddComponentMenu(Config.EventListenerMenu + "Float")]
+    public class EventListenerFloat : EventListener<float> { }
 }

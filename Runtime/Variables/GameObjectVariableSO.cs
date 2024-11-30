@@ -9,5 +9,8 @@ namespace Ripple
     {
         public const string VariableMenu = "Variables/";
         public const string EventMenu = "Events/";
+
+        public const string EventListenerMenu = "Ripple/Event Listener/";
+        public const string VariableListenerMenu = "Ripple/Variable Listener/";
     }
 }

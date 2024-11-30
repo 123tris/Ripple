@@ -11,7 +11,7 @@ namespace Ripple
 
         [SerializeField] private T _constantValue;
 
-        [SerializeField,InlineEditor] private VariableSO<T> _variable;
+        [SerializeField, InlineEditor] private VariableSO<T> _variable;
 
         public VariableReference() { }
 
@@ -29,10 +29,11 @@ namespace Ripple
         }
     }
 
-    public class VariableReferenceBase {}
+    public class VariableReferenceBase { }
 
     [Serializable] public class BoolReference : VariableReference<bool> { }
     [Serializable] public class FloatReference : VariableReference<float> { }
+    [Serializable] public class Vector3Reference : VariableReference<Vector3> { }
     [Serializable] public class TransformReference : VariableReference<Transform> { }
     [Serializable] public class GameObjectReference : VariableReference<GameObject> { }
 }
