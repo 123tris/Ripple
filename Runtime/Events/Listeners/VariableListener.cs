@@ -13,9 +13,19 @@ namespace Ripple
 
         [SerializeField] UltEvent<T> onValueChanged;
 
-        void Awake()
+        void OnEnable()
         {
-            variable.OnValueChanged += v => onValueChanged.Invoke(v);
+            variable.OnValueChanged += OnValueChanged;
+        }
+
+        private void OnValueChanged(T v)
+        {
+            onValueChanged.Invoke(v);
+        }
+
+        void OnDisable()
+        {
+            variable.OnValueChanged -= OnValueChanged;
         }
     }
 }

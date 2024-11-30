@@ -11,7 +11,7 @@ namespace Ripple
         [SerializeField, TextArea, HideInInlineEditors] private string _developerNotes;
 #endif
 
-        [SerializeField, ShowIf("@UnityEngine.Application.isPlaying")]
+        [SerializeField, HideInInspector]
         private T _currentValue;
 
         [SerializeField, HideIf("@UnityEngine.Application.isPlaying")]
@@ -19,6 +19,7 @@ namespace Ripple
 
         private T _previousValue;
 
+        [ShowInInspector, ShowIf("@UnityEngine.Application.isPlaying")]
         public T CurrentValue
         {
             get => _currentValue;
