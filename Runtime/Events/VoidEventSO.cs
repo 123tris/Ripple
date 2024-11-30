@@ -1,4 +1,5 @@
 ﻿using System;
+using Sirenix.OdinInspector;
 using UltEvents;
 using UnityEngine;
 
@@ -20,6 +21,7 @@ namespace Ripple
             hideFlags = HideFlags.DontUnloadUnusedAsset;
         }
 
+        [Button]
         public void Invoke()
         {
             gameEvent?.Invoke();

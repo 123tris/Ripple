@@ -33,6 +33,7 @@ namespace Ripple
 
     [Serializable] public class BoolReference : VariableReference<bool> { }
     [Serializable] public class FloatReference : VariableReference<float> { }
+    [Serializable] public class IntReference : VariableReference<int> { }
     [Serializable] public class Vector3Reference : VariableReference<Vector3> { }
     [Serializable] public class TransformReference : VariableReference<Transform> { }
     [Serializable] public class GameObjectReference : VariableReference<GameObject> { }
