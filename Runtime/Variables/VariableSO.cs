@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -37,8 +38,26 @@ namespace Ripple
         [ShowInInspector, ShowIf("@UnityEngine.Application.isPlaying")]
         private Delegate[] ObjectsListeningToValueChanges => OnValueChanged?.GetInvocationList();
 
+#if UNITY_EDITOR
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void ResetValue()
+        {
+            foreach (var variable in _activeVariables)
+            {
+                variable._currentValue = variable._initialValue;
+            }
+        }
+
+        private static HashSet<VariableSO<T>> _activeVariables = new();
+
+        void OnDisable() => _activeVariables.Remove(this);
+#endif
+        
         void OnEnable()
         {
+            #if UNITY_EDITOR
+            _activeVariables.Add(this);
+            #endif
             _currentValue = _initialValue;
             CurrentValue = _initialValue;
         }
