@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using UltEvents;
 using UnityEngine;
 
 namespace Ripple
@@ -33,10 +34,10 @@ namespace Ripple
 
         private T PreviousValue => _previousValue ?? default;
 
-        public Action<T> OnValueChanged;
+        public UltEvent<T> OnValueChanged;
 
-        [ShowInInspector, ShowIf("@UnityEngine.Application.isPlaying")]
-        private Delegate[] ObjectsListeningToValueChanges => OnValueChanged?.GetInvocationList();
+        // [ShowInInspector, ShowIf("@UnityEngine.Application.isPlaying")]
+        // private Delegate[] ObjectsListeningToValueChanges => OnValueChanged?.GetInvocationList();
 
 #if UNITY_EDITOR
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
