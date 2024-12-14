@@ -12,8 +12,7 @@ namespace Ripple
         [SerializeField, TextArea(0,5, order = 5), HideInInlineEditors] private string _developerNotes;
 #endif
 
-        [SerializeField]
-        private UltEvent<T> gameEvent;
+        [SerializeField] private UltEvent<T> gameEvent;
 
         protected void OnEnable()
         {
@@ -23,7 +22,19 @@ namespace Ripple
         [Button]
         public void Invoke(T parameter)
         {
-            gameEvent?.Invoke(parameter);
+// #if UNITY_EDITOR
+//             invokeStackTraces.Add(GetCaller());
+// #endif
+            if (gameEvent == null) return;
+
+            if (!gameEvent.HasCalls)
+                Debug.LogWarning($"Calling event \"{name}\" but no listeners were found", this);
+            gameEvent.Invoke(parameter);
+        }
+
+        public void Invoke(VariableSO<T> parameter)
+        {
+            Invoke(parameter.CurrentValue);
         }
 
         public bool HasListeners => gameEvent != null;
