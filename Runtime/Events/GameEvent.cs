@@ -9,8 +9,11 @@ namespace Ripple
     public class GameEvent<T> : ScriptableObject
     {
 #if UNITY_EDITOR
-        [SerializeField, TextArea(0,5, order = 5), HideInInlineEditors] private string _developerNotes;
+        [SerializeField, TextArea(0, 5, order = 5), HideInInlineEditors]
+        private string _developerNotes;
+
 #endif
+        [SerializeField] private bool showDebug;
 
         [SerializeField] private UltEvent<T> gameEvent;
 
@@ -29,7 +32,10 @@ namespace Ripple
 
             if (!gameEvent.HasCalls)
                 Debug.LogWarning($"Calling event \"{name}\" but no listeners were found", this);
+            
             gameEvent.Invoke(parameter);
+            if (showDebug) //TODO: Should be turned into custom logger
+                Debug.Log($"Fired event: {name}, with parameter: {parameter}");
         }
 
         public void Invoke(VariableSO<T> parameter)
