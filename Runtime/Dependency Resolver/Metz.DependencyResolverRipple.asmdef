@@ -1,3 +1,20 @@
 {
-	"name": "Metz.DependencyResolverRipple"
+    "name": "Metz.DependencyResolverRipple",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.kybernetik.ultevents",
+            "expression": "0",
+            "define": "ULTEVENTS"
+        }
+    ],
+    "noEngineReferences": false
 }

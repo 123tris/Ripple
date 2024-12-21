@@ -13,8 +13,15 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "ODIN_INSPECTOR"
+        "ODIN_INSPECTOR",
+        "ULTEVENTS"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.kybernetik.ultevents",
+            "expression": "0",
+            "define": "ULTEVENTS"
+        }
+    ],
     "noEngineReferences": false
 }
