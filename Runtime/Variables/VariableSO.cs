@@ -20,7 +20,7 @@ namespace Ripple
         [SerializeField, HideIf("@UnityEngine.Application.isPlaying")]
         private T _initialValue;
 
-        private protected T _previousValue;
+        private T _previousValue;
 
         [ShowInInspector, ShowIf("@UnityEngine.Application.isPlaying")]
         public T CurrentValue
@@ -65,10 +65,9 @@ namespace Ripple
             ResetValue();
         }
 
-        protected void ResetValue()
+        private void ResetValue()
         {
             _currentValue = _initialValue;
-            CurrentValue = _initialValue;
         }
     }
 }
