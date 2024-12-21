@@ -4,11 +4,8 @@ namespace Ripple
 {
     [RippleData]
     [CreateAssetMenu(menuName = Config.VariableMenu + "Integer")]
-    public class IntVariableSO : VariableSO<int>, INumericalVariable<int>
+    public class IntVariableSO : NumericalVariable<int>
     {
-        public void Add(int value)
-        {
-            CurrentValue += value;
-        }
+        protected override int Clamp(int value) => System.Math.Clamp(value, min, max);
     }
 }

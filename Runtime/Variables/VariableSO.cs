@@ -15,24 +15,26 @@ namespace Ripple
         private string _developerNotes;
 #endif
 
-        [SerializeField, HideInInspector] private T _currentValue;
+        [SerializeField, HideInInspector] private protected T _currentValue;
 
         [SerializeField, HideIf("@UnityEngine.Application.isPlaying")]
         private T _initialValue;
 
-        private T _previousValue;
+        private protected T _previousValue;
 
         [ShowInInspector, ShowIf("@UnityEngine.Application.isPlaying")]
         public T CurrentValue
         {
             get => _currentValue;
-            set
-            {
-                _previousValue = _currentValue;
-                if (Application.isPlaying)
-                    OnValueChanged?.Invoke(value);
-                _currentValue = value;
-            }
+            set => SetCurrentValue(value);
+        }
+
+        private protected virtual void SetCurrentValue(T value)
+        {
+            _previousValue = _currentValue;
+            if (Application.isPlaying)
+                OnValueChanged?.Invoke(value);
+            _currentValue = value;
         }
 
         private T PreviousValue => _previousValue ?? default;
@@ -68,10 +70,5 @@ namespace Ripple
             _currentValue = _initialValue;
             CurrentValue = _initialValue;
         }
-    }
-
-    public interface INumericalVariable<T>
-    {
-        public void Add(T value);
     }
 }
