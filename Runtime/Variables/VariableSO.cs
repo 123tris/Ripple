@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UltEvents;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Ripple
 {
@@ -10,11 +11,11 @@ namespace Ripple
     public class VariableSO<T> : ScriptableObject
     {
 #if UNITY_EDITOR
-        [SerializeField, TextArea, HideInInlineEditors] private string _developerNotes;
+        [SerializeField, TextArea, HideInInlineEditors]
+        private string _developerNotes;
 #endif
 
-        [SerializeField, HideInInspector]
-        private T _currentValue;
+        [SerializeField, HideInInspector] private T _currentValue;
 
         [SerializeField, HideIf("@UnityEngine.Application.isPlaying")]
         private T _initialValue;
@@ -25,9 +26,11 @@ namespace Ripple
         public T CurrentValue
         {
             get => _currentValue;
-            set {
+            set
+            {
                 _previousValue = _currentValue;
-                OnValueChanged?.Invoke(value);
+                if (Application.isPlaying)
+                    OnValueChanged?.Invoke(value);
                 _currentValue = value;
             }
         }
@@ -40,25 +43,28 @@ namespace Ripple
         // private Delegate[] ObjectsListeningToValueChanges => OnValueChanged?.GetInvocationList();
 
 #if UNITY_EDITOR
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void ResetValue()
+        private void EditorApplicationOnplayModeStateChanged(UnityEditor.PlayModeStateChange playModeState)
         {
-            foreach (var variable in _activeVariables)
-            {
-                variable._currentValue = variable._initialValue;
-            }
+            if (playModeState == UnityEditor.PlayModeStateChange.EnteredPlayMode)
+                ResetValue();
         }
 
-        private static HashSet<VariableSO<T>> _activeVariables = new();
-
-        void OnDisable() => _activeVariables.Remove(this);
-#endif
-        
-        void OnEnable()
+        private void OnDisable()
         {
-            #if UNITY_EDITOR
-            _activeVariables.Add(this);
-            #endif
+            UnityEditor.EditorApplication.playModeStateChanged -= EditorApplicationOnplayModeStateChanged;
+        }
+#endif
+
+        private void OnEnable()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged += EditorApplicationOnplayModeStateChanged;
+#endif
+            ResetValue();
+        }
+
+        protected void ResetValue()
+        {
             _currentValue = _initialValue;
             CurrentValue = _initialValue;
         }
