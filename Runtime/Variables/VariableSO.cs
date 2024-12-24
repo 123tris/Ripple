@@ -17,12 +17,11 @@ namespace Ripple
 
         [SerializeField, HideInInspector] private protected T _currentValue;
 
-        [SerializeField, HideIf("@UnityEngine.Application.isPlaying")]
-        private T _initialValue;
+        [SerializeField, HideInPlayMode] private T _initialValue;
 
         private T _previousValue;
 
-        [ShowInInspector, ShowIf("@UnityEngine.Application.isPlaying")]
+        [ShowInInspector, HideInEditorMode]
         public T CurrentValue
         {
             get => _currentValue;

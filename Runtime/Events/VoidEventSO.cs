@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Sirenix.OdinInspector;
 using UltEvents;
 using UnityEngine;
@@ -7,12 +8,8 @@ namespace Ripple
 {
     [RippleData]
     [CreateAssetMenu(menuName = "Events/Void")]
-    public class VoidEventSO : ScriptableObject
+    public class VoidEventSO : GameEvent
     {
-#if UNITY_EDITOR
-        [SerializeField, TextArea] private string _developerNotes;
-#endif
-
         [SerializeField]
         private UltEvent gameEvent;
 
@@ -24,6 +21,8 @@ namespace Ripple
         [Button]
         public void Invoke()
         {
+            invokeStackTraces.Add(GetCaller());
+            Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color>", this);
             gameEvent?.Invoke();
         }
 
