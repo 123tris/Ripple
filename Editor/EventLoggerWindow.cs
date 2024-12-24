@@ -26,9 +26,10 @@ namespace Ripple
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
             foreach (LogEntry logEntry in Logger.GetLogs())
             {
-                EditorGUILayout.BeginHorizontal();
+                GUILayout.BeginHorizontal();
                 {
-                    if (GUILayout.Button($"{logEntry.context.name}"))
+                    var size = GUI.skin.button.CalcSize(new GUIContent(logEntry.context.name));
+                    if (GUILayout.Button($"{logEntry.context.name}", GUILayout.Width(size.x), GUILayout.Height(size.y)))
                     {
                         Selection.activeObject = logEntry.context;
                         EditorApplication.ExecuteMenuItem("Window/General/Project");
@@ -37,9 +38,9 @@ namespace Ripple
 
                     var labelStyle = EditorStyles.label;
                     labelStyle.richText = true;
-                    EditorGUILayout.LabelField(logEntry.message, labelStyle);
+                    GUILayout.Label(logEntry.message, labelStyle);
                 }
-                EditorGUILayout.EndHorizontal();
+                GUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndScrollView();
