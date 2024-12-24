@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
@@ -12,14 +13,13 @@ namespace Ripple
         private Vector2 scrollPosition;
 
         [MenuItem("Tools/Open Ripple Event Logger")]
-        static void OpenWindow()
-        {
-            var window = GetWindow<EventLoggerWindow>();
-            window.name = "Ripple Event Logger";
-            window.titleContent.text = window.name;
-        }
+        static void OpenWindow() => GetWindow<EventLoggerWindow>("Ripple Event Logger");
 
-        void OnEnable() => Logger.onLogAdded += _ => GetWindow<EventLoggerWindow>().Repaint();
+        void OnEnable() => Logger.onLogAdded += _ =>
+        {
+            if (Resources.FindObjectsOfTypeAll<EventLoggerWindow>().Any())
+                GetWindow<EventLoggerWindow>().Repaint();
+        };
 
         void OnGUI()
         {
@@ -28,7 +28,9 @@ namespace Ripple
             {
                 GUILayout.BeginHorizontal();
                 {
-                    if (GUILayout.Button($"{logEntry.context.name}"))
+                    var size = GUI.skin.button.CalcSize(new GUIContent(logEntry.context.name));
+                    size.x = Math.Max(100, size.x);
+                    if (GUILayout.Button($"{logEntry.context.name}", GUILayout.Width(size.x), GUILayout.Height(size.y)))
                     {
                         Selection.activeObject = logEntry.context;
                         EditorApplication.ExecuteMenuItem("Window/General/Project");
