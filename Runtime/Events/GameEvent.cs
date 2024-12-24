@@ -45,7 +45,7 @@ namespace Ripple
         {
 #if UNITY_EDITOR
             invokeStackTraces.Add(GetCaller(3));
-            Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color> With value: <color=green>{parameter}</color>", this);
+            Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color> \nWith value: <color=green>{parameter}</color>", this);
 #endif
         }
 
