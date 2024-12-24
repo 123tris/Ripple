@@ -15,11 +15,7 @@ namespace Ripple
         [MenuItem("Tools/Open Ripple Event Logger")]
         static void OpenWindow() => GetWindow<EventLoggerWindow>("Ripple Event Logger");
 
-        void OnEnable() => Logger.onLogAdded += _ =>
-        {
-            if (Resources.FindObjectsOfTypeAll<EventLoggerWindow>().Any())
-                GetWindow<EventLoggerWindow>().Repaint();
-        };
+        void OnEnable() => Logger.onLogAdded += _ => Repaint();
 
         void OnGUI()
         {
