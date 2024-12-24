@@ -28,8 +28,7 @@ namespace Ripple
             {
                 GUILayout.BeginHorizontal();
                 {
-                    var size = GUI.skin.button.CalcSize(new GUIContent(logEntry.context.name));
-                    if (GUILayout.Button($"{logEntry.context.name}", GUILayout.Width(size.x), GUILayout.Height(size.y)))
+                    if (GUILayout.Button($"{logEntry.context.name}"))
                     {
                         Selection.activeObject = logEntry.context;
                         EditorApplication.ExecuteMenuItem("Window/General/Project");
