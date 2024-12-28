@@ -8,13 +8,8 @@ using UnityEngine.SceneManagement;
 namespace Ripple
 {
     [InlineEditor]
-    public class VariableSO<T> : ScriptableObject
+    public class VariableSO<T> : RippleStackTraceSO
     {
-#if UNITY_EDITOR
-        [SerializeField, TextArea, HideInInlineEditors]
-        private string _developerNotes;
-#endif
-
         [SerializeField, HideInInspector] private protected T _currentValue;
 
         [SerializeField, HideInPlayMode] private T _initialValue;
@@ -32,7 +27,10 @@ namespace Ripple
         {
             _previousValue = _currentValue;
             if (Application.isPlaying)
+            {
+                LogInvoke(value);
                 OnValueChanged?.Invoke(value);
+            }
             _currentValue = value;
         }
 
@@ -50,10 +48,7 @@ namespace Ripple
                 ResetValue();
         }
 
-        private void OnDisable()
-        {
-            UnityEditor.EditorApplication.playModeStateChanged -= EditorApplicationOnplayModeStateChanged;
-        }
+        private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -= EditorApplicationOnplayModeStateChanged;
 #endif
 
         private void OnEnable()

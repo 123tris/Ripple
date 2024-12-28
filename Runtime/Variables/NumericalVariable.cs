@@ -5,13 +5,13 @@ namespace Ripple
 {
     public abstract class NumericalVariable<T> : VariableSO<T>
     {
-        [SerializeField] protected bool _isClamped;
+        public bool _isClamped;
 
         [SerializeField, ShowIf(nameof(_isClamped)), HorizontalGroup("clamping")]
-        protected VariableReference<T> min;
+        public VariableReference<T> min;
 
         [SerializeField, ShowIf(nameof(_isClamped)), HorizontalGroup("clamping")]
-        protected VariableReference<T> max;
+        public VariableReference<T> max;
 
         private protected override void SetCurrentValue(T value)
         {

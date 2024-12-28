@@ -31,10 +31,25 @@ namespace Ripple
 
     public class VariableReferenceBase { }
 
-    [Serializable] public class BoolReference : VariableReference<bool> { }
-    [Serializable] public class FloatReference : VariableReference<float> { }
-    [Serializable] public class IntReference : VariableReference<int> { }
-    [Serializable] public class Vector3Reference : VariableReference<Vector3> { }
+    [Serializable]
+    public class BoolReference : VariableReference<bool>
+    {
+        private BoolReference(bool val) : base(val) {}
+    }
+
+    [Serializable]
+    public class FloatReference : VariableReference<float>
+    {
+        private FloatReference(float val) : base(val) {}
+    }
+    [Serializable] public class IntReference : VariableReference<int>
+    {
+        private IntReference(int val) : base(val) {}
+    }
+    [Serializable] public class Vector3Reference : VariableReference<Vector3>
+    {
+        public Vector3Reference(Vector3 value) : base(value) { }
+    }
     [Serializable] public class TransformReference : VariableReference<Transform> { }
     [Serializable] public class GameObjectReference : VariableReference<GameObject> { }
 }

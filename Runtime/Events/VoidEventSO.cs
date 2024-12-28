@@ -21,7 +21,7 @@ namespace Ripple
         [Button]
         public void Invoke()
         {
-            invokeStackTraces.Add(GetCaller());
+            invokeStackTraces.Add(GetCaller(2));
             Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color>", this);
             gameEvent?.Invoke();
         }
