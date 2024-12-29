@@ -10,7 +10,7 @@ namespace Ripple
     public abstract class RippleStackTraceSO : ScriptableObject
     {
 #if UNITY_EDITOR
-        [SerializeField, TextArea] private string _developerNotes;
+        [SerializeField, TextArea, HideInInlineEditors] private string _developerNotes;
 
         [ShowInInspector, DisplayAsString, ShowIf("@invokeStackTraces.Count > 0"),
          LabelText("This Event is getting called by:")]
