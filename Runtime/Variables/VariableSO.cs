@@ -42,9 +42,10 @@ namespace Ripple
         private void EditorApplicationOnplayModeStateChanged(UnityEditor.PlayModeStateChange playModeState)
         {
             if (playModeState == UnityEditor.PlayModeStateChange.ExitingEditMode)
-                invokeStackTraces.Clear();
-            if (playModeState == UnityEditor.PlayModeStateChange.EnteredPlayMode)
+            {
                 ResetValue();
+                invokeStackTraces.Clear();
+            }
         }
 
         private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -= EditorApplicationOnplayModeStateChanged;

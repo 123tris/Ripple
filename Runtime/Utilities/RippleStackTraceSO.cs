@@ -12,18 +12,20 @@ namespace Ripple
 #if UNITY_EDITOR
         [SerializeField, TextArea, HideInInlineEditors] private string _developerNotes;
 
+        [SerializeField, BoxGroup("Debug", order: 1)]
+        private bool disableLogging = false;
+        
         [ShowInInspector, DisplayAsString, ShowIf("@invokeStackTraces.Count > 0"),
-         LabelText("This Event is getting called by:")]
+         LabelText("This Event is getting called by:"), BoxGroup("Debug", order: 1)]
         protected List<string> invokeStackTraces = new();
 
-        private bool disableLogging = false;
 #endif
 
         protected void LogInvoke<T>(T parameter)
         {
 #if UNITY_EDITOR
-            if (disableLogging) return;
             invokeStackTraces.Add(GetCaller(3));
+            if (disableLogging) return;
             Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color> \nWith value: <color=green>{parameter}</color>", this);
 #endif
         }
