@@ -34,17 +34,17 @@ namespace Ripple
     [Serializable]
     public class BoolReference : VariableReference<bool>
     {
-        private BoolReference(bool val) : base(val) {}
+        public BoolReference(bool val) : base(val) {}
     }
 
     [Serializable]
     public class FloatReference : VariableReference<float>
     {
-        private FloatReference(float val) : base(val) {}
+        public FloatReference(float val) : base(val) {}
     }
     [Serializable] public class IntReference : VariableReference<int>
     {
-        private IntReference(int val) : base(val) {}
+        public IntReference(int val) : base(val) {}
     }
     [Serializable] public class Vector3Reference : VariableReference<Vector3>
     {
