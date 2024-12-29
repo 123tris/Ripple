@@ -34,16 +34,15 @@ namespace Ripple
             _currentValue = value;
         }
 
-        private T PreviousValue => _previousValue ?? default;
+        public T PreviousValue => _previousValue ?? _initialValue;
 
         public UltEvent<T> OnValueChanged;
-
-        // [ShowInInspector, ShowIf("@UnityEngine.Application.isPlaying")]
-        // private Delegate[] ObjectsListeningToValueChanges => OnValueChanged?.GetInvocationList();
 
 #if UNITY_EDITOR
         private void EditorApplicationOnplayModeStateChanged(UnityEditor.PlayModeStateChange playModeState)
         {
+            if (playModeState == UnityEditor.PlayModeStateChange.ExitingEditMode)
+                invokeStackTraces.Clear();
             if (playModeState == UnityEditor.PlayModeStateChange.EnteredPlayMode)
                 ResetValue();
         }
