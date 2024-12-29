@@ -15,11 +15,14 @@ namespace Ripple
         [ShowInInspector, DisplayAsString, ShowIf("@invokeStackTraces.Count > 0"),
          LabelText("This Event is getting called by:")]
         protected List<string> invokeStackTraces = new();
+
+        private bool disableLogging = false;
 #endif
 
         protected void LogInvoke<T>(T parameter)
         {
 #if UNITY_EDITOR
+            if (disableLogging) return;
             invokeStackTraces.Add(GetCaller(3));
             Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color> \nWith value: <color=green>{parameter}</color>", this);
 #endif
