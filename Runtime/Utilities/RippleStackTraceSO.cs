@@ -12,7 +12,7 @@ namespace Ripple
 #if UNITY_EDITOR
         [SerializeField, TextArea, HideInInlineEditors] private string _developerNotes;
 
-        [SerializeField, BoxGroup("Debug", order: 1)]
+        [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors]
         private bool disableLogging = false;
         
         [ShowInInspector, DisplayAsString, ShowIf("@invokeStackTraces.Count > 0"),

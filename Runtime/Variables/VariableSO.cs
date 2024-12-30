@@ -26,12 +26,12 @@ namespace Ripple
         private protected virtual void SetCurrentValue(T value)
         {
             _previousValue = _currentValue;
+            _currentValue = value;
             if (Application.isPlaying)
             {
                 LogInvoke(value);
                 OnValueChanged?.Invoke(value);
             }
-            _currentValue = value;
         }
 
         public T PreviousValue => _previousValue ?? _initialValue;

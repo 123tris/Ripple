@@ -58,6 +58,5 @@ namespace Ripple
 
         public Vector3Reference() { }
     }
-    [Serializable] public class TransformReference : VariableReference<Transform> { }
     [Serializable] public class GameObjectReference : VariableReference<GameObject> { }
 }
