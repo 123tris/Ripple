@@ -1,6 +1,7 @@
 using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Ripple
 {
@@ -8,6 +9,9 @@ namespace Ripple
     public class VariableReference<T> : VariableReferenceBase
     {
         public bool useConstant = true;
+        public bool useRandom = false;
+
+        private RandomValue<T> _randomValue = new();
 
         [SerializeField] private T _constantValue;
 
@@ -21,12 +25,27 @@ namespace Ripple
             _constantValue = value;
         }
 
-        public T Value => useConstant ? _constantValue : _variable.CurrentValue;
+        public T Value
+        {
+            get
+            {
+                if (useRandom)
+                    return Random.Range();
+                return useConstant ? _constantValue : _variable.CurrentValue;
+            }
+        }
 
         public static implicit operator T(VariableReference<T> reference)
         {
             return reference.Value;
         }
+    }
+
+    [Serializable]
+    public class RandomValue<T>
+    {
+        public T min;
+        public T max;
     }
 
     public class VariableReferenceBase { }

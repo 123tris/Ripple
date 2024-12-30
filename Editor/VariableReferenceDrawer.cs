@@ -11,7 +11,7 @@ namespace Ripple
         /// <summary>
         /// Options to display in the popup to select constant or variable.
         /// </summary>
-        private readonly string[] popupOptions = { "Use Constant", "Use Variable" };
+        private readonly string[] popupOptions = { "Use Constant", "Use Variable", "Use Random" };
 
         /// <summary> Cached style to use to draw the popup button. </summary>
         private GUIStyle popupStyle;
@@ -31,7 +31,9 @@ namespace Ripple
 
             // Get properties
             SerializedProperty useConstant = property.FindPropertyRelative("useConstant");
+            SerializedProperty useRandom = property.FindPropertyRelative("useRandom");
             SerializedProperty constantValue = property.FindPropertyRelative("_constantValue");
+            SerializedProperty randomValue = property.FindPropertyRelative("_randomValue");
             SerializedProperty variable = property.FindPropertyRelative("_variable");
 
             // Calculate rect for configuration button
@@ -44,11 +46,21 @@ namespace Ripple
             int indent = EditorGUI.indentLevel;
             EditorGUI.indentLevel = 0;
 
-            int result = EditorGUI.Popup(buttonRect, useConstant.boolValue ? 0 : 1, popupOptions, popupStyle);
+            int selectedIndex = useRandom.boolValue ? 2 : useConstant.boolValue ? 0 : 1;
+            
+            int result = EditorGUI.Popup(buttonRect, selectedIndex, popupOptions, popupStyle);
 
             useConstant.boolValue = result == 0;
+            useRandom.boolValue = result == 2;
 
-            EditorGUI.PropertyField(position, useConstant.boolValue ? constantValue : variable, GUIContent.none);
+            SerializedProperty propertyToDraw;
+            if (useRandom.boolValue)
+                propertyToDraw = randomValue;
+            else if (useConstant.boolValue)
+                propertyToDraw = constantValue;
+            else
+                propertyToDraw = variable;
+            EditorGUI.PropertyField(position, propertyToDraw, GUIContent.none);
 
             if (EditorGUI.EndChangeCheck())
                 property.serializedObject.ApplyModifiedProperties();
