@@ -36,6 +36,7 @@ namespace Ripple
 
         public T PreviousValue => _previousValue ?? _initialValue;
 
+        [HideInInlineEditors]
         public UltEvent<T> OnValueChanged;
 
 #if UNITY_EDITOR

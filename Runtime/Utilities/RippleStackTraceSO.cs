@@ -10,13 +10,14 @@ namespace Ripple
     public abstract class RippleStackTraceSO : ScriptableObject
     {
 #if UNITY_EDITOR
-        [SerializeField, TextArea, HideInInlineEditors] private string _developerNotes;
+        [SerializeField, TextArea, HideInInlineEditors]
+        private string _developerNotes;
 
         [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors]
         private bool disableLogging = false;
-        
+
         [ShowInInspector, DisplayAsString, ShowIf("@invokeStackTraces.Count > 0"),
-         LabelText("This Event is getting called by:"), BoxGroup("Debug", order: 1)]
+         LabelText("This Event is getting called by:"), BoxGroup("Debug", order: 1), HideInInlineEditors]
         protected List<string> invokeStackTraces = new();
 
 #endif
@@ -26,10 +27,12 @@ namespace Ripple
 #if UNITY_EDITOR
             invokeStackTraces.Add(GetCaller(3));
             if (disableLogging) return;
-            Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color> \nWith value: <color=green>{parameter}</color>", this);
+            Logger.Log(
+                $"Called by: <color=red>{invokeStackTraces.Last()}</color> \nWith value: <color=green>{parameter}</color>",
+                this);
 #endif
         }
-        
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private protected string GetCaller(int level)
         {
