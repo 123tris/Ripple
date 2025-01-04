@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary> Value dropdown for scriptable objects.</summary>
 [IncludeMyAttributes]
 [ValueDropdown("@AssetDropdown.GetScriptableObjects($value)", AppendNextDrawer = true)]
-[Required,AssetsOnly]
+[AssetsOnly]
 //[AttributeUsage(AttributeTargets.Field)]
 public class AssetDropdown : Attribute
 {
