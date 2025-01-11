@@ -26,5 +26,10 @@ namespace Ripple
         {
             CurrentValue += (dynamic)value; //Kind of dangerous code as the cast will make the compiler no longer check ahead of time if the operator is actually implemented and thus for certain types can incur a runtime exception
         }
+
+        public void Add(NumericalVariable<T> variable)
+        {
+            Add(variable.CurrentValue);
+        }
     }
 }
