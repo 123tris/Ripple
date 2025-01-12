@@ -25,7 +25,10 @@ namespace Ripple
         protected void LogInvoke<T>(T parameter)
         {
 #if UNITY_EDITOR
-            invokeStackTraces.Add(GetCaller(3));
+            if (this is NumericalVariable<T>)
+                invokeStackTraces.Add(GetCaller(4));
+            else
+                invokeStackTraces.Add(GetCaller(3));
             if (disableLogging) return;
             Logger.Log(
                 $"Called by: <color=red>{invokeStackTraces.Last()}</color> \nWith value: <color=green>{parameter}</color>",
