@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 namespace Ripple
 {
     [InlineEditor]
-    public class VariableSO<T> : RippleStackTraceSO, IVariable<T>
+    public class VariableSO<T> : BaseVariable<T>
     {
         [SerializeField, HideInInspector] private protected T _currentValue;
 
@@ -17,7 +17,7 @@ namespace Ripple
         private T _previousValue;
 
         [ShowInInspector, HideInEditorMode]
-        public T CurrentValue
+        public override T CurrentValue
         {
             get => _currentValue;
             set => SetCurrentValue(value);
@@ -64,5 +64,10 @@ namespace Ripple
         {
             _currentValue = _initialValue;
         }
+    }
+
+    public abstract class BaseVariable<T> : RippleStackTraceSO
+    {
+        public abstract T CurrentValue { get; set; }
     }
 }
