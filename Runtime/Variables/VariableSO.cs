@@ -17,13 +17,9 @@ namespace Ripple
         private T _previousValue;
 
         [ShowInInspector, HideInEditorMode]
-        public override T CurrentValue
-        {
-            get => _currentValue;
-            set => SetCurrentValue(value);
-        }
+        public override T CurrentValue => _currentValue;
 
-        private protected virtual void SetCurrentValue(T value)
+        public virtual void SetCurrentValue(T value)
         {
             _previousValue = _currentValue;
             _currentValue = value;
@@ -68,6 +64,6 @@ namespace Ripple
 
     public abstract class BaseVariable<T> : RippleStackTraceSO
     {
-        public abstract T CurrentValue { get; set; }
+        public abstract T CurrentValue { get; }
     }
 }
