@@ -13,7 +13,7 @@ namespace Ripple
         [SerializeField, ShowIf(nameof(_isClamped)), HorizontalGroup("clamping")]
         public VariableReference<T> max;
 
-        private protected override void SetCurrentValue(T value)
+        public override void SetCurrentValue(T value)
         {
             if (_isClamped)
                 value = Clamp(value);
