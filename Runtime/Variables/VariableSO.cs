@@ -16,8 +16,16 @@ namespace Ripple
 
         private T _previousValue;
 
-        [ShowInInspector, HideInEditorMode]
         public override T CurrentValue => _currentValue;
+
+#if UNITY_EDITOR
+        [ShowInInspector, HideInEditorMode, LabelText("Value")]
+        private T EditorValue
+        {
+            get => _currentValue;
+            set => SetCurrentValue(value);
+        }
+#endif
 
         public virtual void SetCurrentValue(T value)
         {
@@ -32,8 +40,7 @@ namespace Ripple
 
         public T PreviousValue => _previousValue ?? _initialValue;
 
-        [HideInInlineEditors]
-        public UltEvent<T> OnValueChanged;
+        [HideInInlineEditors] public UltEvent<T> OnValueChanged;
 
 #if UNITY_EDITOR
         private void EditorApplicationOnplayModeStateChanged(UnityEditor.PlayModeStateChange playModeState)
@@ -45,7 +52,8 @@ namespace Ripple
             }
         }
 
-        private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -= EditorApplicationOnplayModeStateChanged;
+        private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -=
+            EditorApplicationOnplayModeStateChanged;
 #endif
 
         private void OnEnable()
