@@ -11,7 +11,7 @@ namespace Ripple
 
         [SerializeField] private T _constantValue;
 
-        [SerializeField, InlineEditor] private VariableSO<T> _variable;
+        [SerializeField, InlineEditor] private BaseVariable<T> _variable;
 
         public VariableReference() { }
 
