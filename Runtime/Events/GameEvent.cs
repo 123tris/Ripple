@@ -25,7 +25,7 @@ namespace Ripple
             hideFlags = HideFlags.DontUnloadUnusedAsset;
         }
 
-        [Button]
+        [Button, BoxGroup("Debug")]
         public void Invoke(T parameter)
         {
             LogInvoke(parameter);
