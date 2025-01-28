@@ -2,7 +2,7 @@
     "name": "Metz.Ripple.Runtime",
     "rootNamespace": "",
     "references": [
-        "GUID:57a6d82589ae03c4cabdc058f719f231"
+        "GUID:e51ce130d30a84d4bb4db355d8885560"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
