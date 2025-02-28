@@ -10,8 +10,7 @@ namespace Ripple
     [CreateAssetMenu(menuName = "Events/Void")]
     public class VoidEventSO : GameEvent
     {
-        [SerializeField]
-        private UltEvent gameEvent;
+        [SerializeField] private UltEvent gameEvent;
 
         protected void OnEnable()
         {
@@ -21,8 +20,10 @@ namespace Ripple
         [Button]
         public void Invoke()
         {
+#if UNITY_EDITOR
             invokeStackTraces.Add(GetCaller(2));
             Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color>", this);
+#endif
             gameEvent?.Invoke();
         }
 
