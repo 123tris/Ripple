@@ -33,5 +33,15 @@ namespace Ripple
         public void AddListener(Action method) => gameEvent += method;
 
         public void RemoveListener(Action method) => gameEvent -= method;
+
+        public override void AddGenericListener(Delegate method)
+        {
+            gameEvent.AddPersistentCall(method);
+        }
+
+        public override void RemoveGenericListener(Delegate method)
+        {
+            gameEvent.RemovePersistentCall(method);
+        }
     }
 }
