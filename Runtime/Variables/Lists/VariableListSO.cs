@@ -15,8 +15,8 @@ namespace Ripple
         [ShowInInspector]
         public List<T> CurrentValues => _currentValue;
 
-        public Action<T> OnValueAdded;
-        public Action<T> OnValueRemoved;
+        public Action<T> OnItemAdded;
+        public Action<T> OnItemRemoved;
         
         public IEnumerator<T> GetEnumerator()
         {
@@ -30,7 +30,7 @@ namespace Ripple
 
         public void Add(T item)
         {
-            OnValueAdded?.Invoke(item);
+            OnItemAdded?.Invoke(item);
             _currentValue.Add(item);
         }
 
@@ -51,7 +51,7 @@ namespace Ripple
 
         public bool Remove(T item)
         {
-            OnValueRemoved?.Invoke(item);
+            OnItemRemoved?.Invoke(item);
             return _currentValue.Remove(item);
         }
 
