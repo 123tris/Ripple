@@ -26,7 +26,7 @@ namespace Ripple
         }
 
         [Button, BoxGroup("Debug")]
-        public void Invoke(T parameter)
+        public virtual void Invoke(T parameter)
         {
             LogInvoke(parameter);
             if (response == null) return;
