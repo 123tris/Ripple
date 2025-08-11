@@ -9,10 +9,9 @@ namespace Ripple
     [InlineEditor]
     public class VariableListSO<T> : RippleStackTraceSO, IList<T>
     {
-        [SerializeField, HideInInspector]
+        [SerializeField]
         private List<T> _currentValue;
 
-        [ShowInInspector]
         public List<T> CurrentValues => _currentValue;
 
         public Action<T> OnItemAdded;

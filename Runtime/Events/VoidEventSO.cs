@@ -15,6 +15,18 @@ namespace Ripple
         protected void OnEnable()
         {
             hideFlags = HideFlags.DontUnloadUnusedAsset;
+            
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged += state =>
+            {
+                if (state == UnityEditor.PlayModeStateChange.ExitingEditMode)
+                {
+                    invokeStackTraces.Clear();
+                    if (clearListenersOnPlaymode)
+                        gameEvent.Clear();
+                }
+            };
+#endif
         }
 
         [Button]

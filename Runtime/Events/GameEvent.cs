@@ -19,7 +19,11 @@ namespace Ripple
             UnityEditor.EditorApplication.playModeStateChanged += state =>
             {
                 if (state == UnityEditor.PlayModeStateChange.ExitingEditMode)
+                {
                     invokeStackTraces.Clear();
+                    if (clearListenersOnPlaymode)
+                        response.Clear();
+                }
             };
 #endif
             hideFlags = HideFlags.DontUnloadUnusedAsset;
@@ -50,5 +54,8 @@ namespace Ripple
         public void RemoveListener(Action<T> method) => response -= method;
     }
 
-    public abstract class GameEvent : RippleStackTraceSO { }
+    public abstract class GameEvent : RippleStackTraceSO
+    {
+        [SerializeField, BoxGroup("Debug")] protected bool clearListenersOnPlaymode;
+    }
 }
