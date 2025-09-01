@@ -21,7 +21,17 @@ namespace Ripple
             _constantValue = value;
         }
 
-        public T Value => useConstant ? _constantValue : _variable.CurrentValue;
+        public T Value
+        {
+            get
+            {
+                if (useConstant)
+                    return _constantValue;
+                if (_variable)
+                    return _variable.CurrentValue;
+                return default;
+            }
+        }
 
         public static implicit operator T(VariableReference<T> reference)
         {
