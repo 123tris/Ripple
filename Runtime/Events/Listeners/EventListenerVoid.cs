@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Ripple
 {
+    [AddComponentMenu(Config.EventListenerMenu + "Event Listener Void")]
     public class EventListenerVoid : MonoBehaviour
     {
         [SerializeField]
