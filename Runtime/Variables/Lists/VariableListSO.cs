@@ -16,7 +16,7 @@ namespace Ripple
 
         public Action<T> OnItemAdded;
         public Action<T> OnItemRemoved;
-        
+
         public IEnumerator<T> GetEnumerator()
         {
             return _currentValue.GetEnumerator();
@@ -31,6 +31,28 @@ namespace Ripple
         {
             OnItemAdded?.Invoke(item);
             _currentValue.Add(item);
+        }
+
+        public void AddRange(IEnumerable<T> items)
+        {
+            _currentValue.AddRange(items);
+        }
+
+        public void ResizeRange(int count)
+        {
+            if (count < 0)
+            {
+                count = 0;
+                Debug.LogError("Count cannot be negative. Setting count to 0.");
+            }
+            if (_currentValue.Count > count)
+            {
+                _currentValue.RemoveRange(count, _currentValue.Count - count);
+            }
+            else if (_currentValue.Count < count)
+            {
+                _currentValue.AddRange(new T[count - _currentValue.Count]);
+            }
         }
 
         public void Clear()
