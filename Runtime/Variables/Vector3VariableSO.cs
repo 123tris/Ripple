@@ -15,5 +15,10 @@ namespace Ripple
             value.z = Math.Clamp(value.z, min.Value.z, max.Value.z);
             return value;
         }
+
+        public override void Add(Vector3 value)
+        {
+            SetCurrentValue(CurrentValue + value);
+        }
     }
 }

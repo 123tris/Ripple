@@ -22,7 +22,7 @@ namespace Ripple
 
         protected abstract T Clamp(T value);
 
-        public void Add(T value)
+        public virtual void Add(T value)
         {
             SetCurrentValue(CurrentValue + (dynamic)value); //Kind of dangerous code as the cast will make the compiler no longer check ahead of time if the operator is actually implemented and thus for certain types can incur a runtime exception
         }
