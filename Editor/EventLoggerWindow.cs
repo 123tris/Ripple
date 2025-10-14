@@ -20,8 +20,10 @@ namespace Ripple
         void OnGUI()
         {
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
-            foreach (LogEntry logEntry in Logger.GetLogs())
+            var logs = Logger.GetLogs();
+            for (int i = logs.Count - 1; i >= 0; i--)
             {
+                LogEntry logEntry = logs[i];
                 GUILayout.BeginHorizontal();
                 {
                     var size = GUI.skin.button.CalcSize(new GUIContent(logEntry.context.name));

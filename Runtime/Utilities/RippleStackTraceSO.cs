@@ -54,13 +54,10 @@ namespace Ripple
 
             var m = stackTrace.GetFrame(level).GetMethod();
 
-            // .Name is the name only, .FullName includes the namespace
             var className = m.DeclaringType.FullName;
 
-            //the method/function name you are looking for.
             var methodName = m.Name;
 
-            //returns a composite of the namespace, class and method name.
             return className + "->" + methodName;
         }
     }
