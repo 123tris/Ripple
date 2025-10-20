@@ -67,6 +67,9 @@ namespace Ripple
         private void ResetValue()
         {
             _currentValue = _initialValue;
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.SetDirty(this);
+#endif
         }
     }
 
