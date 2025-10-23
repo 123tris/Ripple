@@ -67,7 +67,7 @@ public class RippleWizard : OdinMenuEditorWindow
             //    GUILayout.Label(selected.Name);
             //}
 
-            if (SirenixEditorGUI.ToolbarButton(new GUIContent("This window is still work-in-progress, at the moment you can use it to make changes to all of your scriptable objects from Ripple")))
+            if (SirenixEditorGUI.ToolbarButton(new GUIContent("This window is still work-in-progress, at the moment you can use it to make changes")))
             {
                 Debug.Log("WIP");
             }
