@@ -10,7 +10,8 @@ namespace Ripple
     [InlineEditor]
     public class GameEvent<T> : GameEvent
     {
-        [FormerlySerializedAs("gameEvent")] [SerializeField]
+        [FormerlySerializedAs("gameEvent")]
+        [SerializeField]
         private UltEvent<T> response;
 
         protected void OnEnable()
@@ -52,10 +53,23 @@ namespace Ripple
         public void AddListener(Action<T> method) => response += method;
 
         public void RemoveListener(Action<T> method) => response -= method;
+
+        public override void AddGenericListener(Delegate method)
+        {
+            response.AddPersistentCall(method);
+        }
+
+        public override void RemoveGenericListener(Delegate method)
+        {
+            response.RemovePersistentCall(method);
+        }
     }
 
     public abstract class GameEvent : RippleStackTraceSO
     {
+        public abstract void AddGenericListener(Delegate method);
+
+        public abstract void RemoveGenericListener(Delegate method);
         [SerializeField, BoxGroup("Debug")] protected bool clearListenersOnPlaymode;
     }
 }
