@@ -13,8 +13,11 @@ namespace Ripple
         [SerializeField, TextArea, HideInInlineEditors]
         private string _developerNotes;
 
-        [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors]
+        [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors, HorizontalGroup("Debug/Disable"), LabelWidth(100)]
         private bool disableLogging = false;
+        
+        [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors, HorizontalGroup("Debug/Disable"), LabelWidth(125)]
+        private bool disableStackTrace = false;
 
         [ShowInInspector, DisplayAsString, ShowIf("@invokeStackTraces.Count > 0"),
          LabelText("This Event is getting called by:"), BoxGroup("Debug", order: 1), HideInInlineEditors]
@@ -25,10 +28,15 @@ namespace Ripple
         protected void LogInvoke<T>(T parameter)
         {
 #if UNITY_EDITOR
-            if (this is NumericalVariable<T>)
-                invokeStackTraces.Add(GetCaller(4));
-            else
-                invokeStackTraces.Add(GetCaller(3));
+
+            if (!disableStackTrace)
+            {
+                if (this is NumericalVariable<T>)
+                    invokeStackTraces.Add(GetCaller(4));
+                else
+                    invokeStackTraces.Add(GetCaller(3));
+            }
+            
             if (disableLogging) return;
             Logger.Log(
                 $"Called by: <color=red>{invokeStackTraces.Last()}</color> \nWith value: <color=green>{parameter}</color>",
