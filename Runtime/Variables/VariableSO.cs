@@ -42,6 +42,25 @@ namespace Ripple
 
         [HideInInlineEditors] public UltEvent<T> OnValueChanged;
 
+        protected override void ResetValue()
+        {
+            _currentValue = _initialValue;
+        }
+
+        public override object Value => _currentValue;
+    }
+
+    public abstract class BaseVariable<T> : BaseVariable
+    {
+        public abstract T CurrentValue { get; }
+
+        protected virtual void OnEnable()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged += EditorApplicationOnplayModeStateChanged;
+#endif
+            ResetValue();
+        }
 #if UNITY_EDITOR
         private void EditorApplicationOnplayModeStateChanged(UnityEditor.PlayModeStateChange playModeState)
         {
@@ -55,23 +74,15 @@ namespace Ripple
         private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -=
             EditorApplicationOnplayModeStateChanged;
 #endif
-
-        private void OnEnable()
+        
+        protected virtual void ResetValue()
         {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.playModeStateChanged += EditorApplicationOnplayModeStateChanged;
-#endif
-            ResetValue();
-        }
-
-        private void ResetValue()
-        {
-            _currentValue = _initialValue;
+            
         }
     }
 
-    public abstract class BaseVariable<T> : RippleStackTraceSO
+    public abstract class BaseVariable : RippleStackTraceSO
     {
-        public abstract T CurrentValue { get; }
+        public abstract object Value { get; }
     }
 }
