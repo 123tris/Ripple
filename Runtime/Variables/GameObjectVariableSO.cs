@@ -5,7 +5,7 @@ namespace Ripple
     [CreateAssetMenu(menuName = Config.VariableMenu + "GameObject")]
     public class GameObjectVariableSO : VariableSO<GameObject> {}
 
-    internal static class Config
+    public static class Config
     {
         public const string VariableMenu = "Variables/";
         public const string VariableListMenu = "VariableLists/";
