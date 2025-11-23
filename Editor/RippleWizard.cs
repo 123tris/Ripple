@@ -11,10 +11,8 @@ public class RippleWizard : OdinMenuEditorWindow
     [MenuItem("Tools/Open Ripple Wizard")]
     static void OpenWindow() => GetWindow<RippleWizard>();
 
-    private static readonly Type[] typesToDisplay = TypeCache.GetTypesWithAttribute<RippleData>()
-            .OrderBy(a => a.Name)
-            .ToArray();
-
+    private static Type[] TypesToDisplay => RippleTypeCache.CachedTypes;
+    
     protected override OdinMenuTree BuildMenuTree()
     {
         OdinMenuTree tree = new();
@@ -40,7 +38,7 @@ public class RippleWizard : OdinMenuEditorWindow
 
         tree.DefaultMenuStyle = customMenuStyle;
 
-        foreach (var type in typesToDisplay)
+        foreach (var type in TypesToDisplay)
         {
             string path = type.Name;
             //if (type.IsSubclassOfRawGeneric(typeof(GameEvent<>)))

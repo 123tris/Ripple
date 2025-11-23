@@ -39,7 +39,7 @@ namespace Ripple
             
             if (disableLogging) return;
             Logger.Log(
-                $"Called by: <color=red>{invokeStackTraces.Last()}</color> \nWith value: <color=green>{parameter}</color>",
+                $"Called by: <color=red>{invokeStackTraces.LastOrDefault()}</color> \nWith value: <color=green>{parameter}</color>",
                 this);
 #endif
         }
