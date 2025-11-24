@@ -11,7 +11,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public static class RippleTypeCache
 {
-    public static Type[] CachedTypes;
+    private static Type[] CachedTypes = Type.EmptyTypes;
     public static bool IsReady = false;
 
     private const bool EnableDebugLogs = false;
@@ -87,6 +87,14 @@ public static class RippleTypeCache
             }
         });
     }
+
+    public static bool TryGetCachedTypes(out Type[] types)
+    {
+        types = IsReady ? CachedTypes : Type.EmptyTypes;
+        return IsReady;
+    }
+
+    public static Type[] GetCachedTypes() => IsReady ? CachedTypes : Type.EmptyTypes;
 
     private static void Log(string message)
     {
