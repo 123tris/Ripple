@@ -10,7 +10,7 @@ namespace Ripple
     [InlineEditor]
     public class VariableSO<T> : BaseVariable<T>
     {
-        [SerializeField, HideInInspector] private protected T _currentValue;
+        private protected T _currentValue;
 
         [SerializeField, HideInPlayMode] private T _initialValue;
 
