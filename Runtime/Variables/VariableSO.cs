@@ -48,7 +48,7 @@ namespace Ripple
             if (playModeState == UnityEditor.PlayModeStateChange.ExitingEditMode)
             {
                 ResetValue();
-                invokeStackTraces.Clear();
+                stackTrace.Clear();
             }
         }
 

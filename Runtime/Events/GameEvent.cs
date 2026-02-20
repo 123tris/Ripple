@@ -11,7 +11,7 @@ namespace Ripple
     public class GameEvent<T> : GameEvent
     {
         [FormerlySerializedAs("gameEvent")]
-        [SerializeField]
+        [SerializeField,PropertySpace(SpaceAfter = 20)]
         private UltEvent<T> response;
 
         protected void OnEnable()
@@ -21,7 +21,7 @@ namespace Ripple
             {
                 if (state == UnityEditor.PlayModeStateChange.ExitingEditMode)
                 {
-                    invokeStackTraces.Clear();
+                    stackTrace.Clear();
                     if (clearListenersOnPlaymode)
                         response.Clear();
                 }

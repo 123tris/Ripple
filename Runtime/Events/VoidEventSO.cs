@@ -21,7 +21,7 @@ namespace Ripple
             {
                 if (state == UnityEditor.PlayModeStateChange.ExitingEditMode)
                 {
-                    invokeStackTraces.Clear();
+                    stackTrace.Clear();
                     if (clearListenersOnPlaymode)
                         gameEvent.Clear();
                 }
@@ -33,8 +33,10 @@ namespace Ripple
         public void Invoke()
         {
 #if UNITY_EDITOR
-            invokeStackTraces.Add(GetCaller(2));
-            Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color>", this);
+            StacktraceItem item = GetStracktraceItem(STACK_TRACE_DEPTH);
+            item.name = GetCaller(2);
+            stackTrace.Add(item);
+            Logger.Log($"Called by: <color=red>{stackTrace.Last()}</color>", this);
 #endif
             gameEvent?.Invoke();
         }
