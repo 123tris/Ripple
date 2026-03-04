@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using System.Collections.Generic;
 using UltEvents;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Ripple
 {
@@ -51,20 +49,27 @@ namespace Ripple
                 stackTrace.Clear();
             }
         }
-
-        private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -=
-            EditorApplicationOnplayModeStateChanged;
 #endif
 
-        private void OnEnable()
+        protected override void OnDisable()
         {
+            base.OnDisable();
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged -=
+            EditorApplicationOnplayModeStateChanged;
+#endif
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.playModeStateChanged += EditorApplicationOnplayModeStateChanged;
 #endif
             ResetValue();
         }
 
-        private void ResetValue()
+        public override void ResetValue()
         {
             _currentValue = _initialValue;
 #if UNITY_EDITOR
@@ -73,8 +78,33 @@ namespace Ripple
         }
     }
 
-    public abstract class BaseVariable<T> : RippleStackTraceSO
+    public abstract class BaseVariable<T> : BaseVariable
     {
         public abstract T CurrentValue { get; }
+    }
+
+    public abstract class BaseVariable : RippleStackTraceSO
+    {
+        protected static List<BaseVariable> instances = new();
+
+        protected virtual void OnEnable()
+        {
+            instances.Add(this);
+        }
+
+        protected virtual void OnDisable()
+        {
+            instances.Remove(this);
+        }
+
+        public abstract void ResetValue();
+
+        public static void ResetAllVariables()
+        {
+            foreach (var variable in instances)
+            {
+                variable.ResetValue();
+            }
+        }
     }
 }
