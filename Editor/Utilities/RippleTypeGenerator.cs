@@ -127,15 +127,19 @@ namespace {TargetNamespace}
 
         private void CreateFile(string folderName, string className, string contents)
         {
-            string path = Path.Combine(OutputFolder + $"/{folderName}", className + ".cs");
+            string directoryPath = OutputFolder + $"/{folderName}";
+            if (!Directory.Exists(directoryPath))
+                Directory.CreateDirectory(directoryPath);
 
-            if (File.Exists(path))
+            string filepath = Path.Combine(directoryPath, className + ".cs");
+
+            if (File.Exists(filepath))
             {
                 Debug.LogWarning($"Skipped existing file: {className}");
                 return;
             }
 
-            File.WriteAllText(path, contents);
+            File.WriteAllText(filepath, contents);
         }
 
         private static string GetSafeTypeName(Type type)
