@@ -11,7 +11,7 @@ namespace Ripple
     public class GameEvent<T> : GameEvent
     {
         [FormerlySerializedAs("gameEvent")]
-        [SerializeField,PropertySpace(SpaceAfter = 20)]
+        [SerializeField, PropertySpace(SpaceAfter = 10)]
         private UltEvent<T> response;
 
         protected void OnEnable()

@@ -15,7 +15,7 @@ namespace Ripple
         protected void OnEnable()
         {
             hideFlags = HideFlags.DontUnloadUnusedAsset;
-            
+
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.playModeStateChanged += state =>
             {
@@ -29,7 +29,7 @@ namespace Ripple
 #endif
         }
 
-        [Button]
+        [Button, PropertySpace(SpaceAfter = 10)]
         public void Invoke()
         {
 #if UNITY_EDITOR
