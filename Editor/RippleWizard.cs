@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Ripple;
 using Sirenix.OdinInspector.Editor;
@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class RippleWizard : OdinMenuEditorWindow
 {
-    [MenuItem("Tools/Open Ripple Wizard")]
+    [MenuItem("Tools/Ripple/Open Wizard")]
     static void OpenWindow() => GetWindow<RippleWizard>();
 
     private static readonly Type[] typesToDisplay = TypeCache.GetTypesWithAttribute<RippleData>()

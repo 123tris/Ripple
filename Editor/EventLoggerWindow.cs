@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Sirenix.OdinInspector;
-using Sirenix.OdinInspector.Editor;
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,7 +8,7 @@ namespace Ripple
     {
         private Vector2 scrollPosition;
 
-        [MenuItem("Tools/Open Ripple Event Logger")]
+        [MenuItem("Tools/Ripple/Open Event Logger")]
         static void OpenWindow() => GetWindow<EventLoggerWindow>("Ripple Event Logger");
 
         void OnEnable() => Logger.onLogAdded += _ => Repaint();
