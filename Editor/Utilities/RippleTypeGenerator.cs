@@ -20,7 +20,7 @@ namespace Ripple.EditorTools
 
         [BoxGroup("Type Selection")]
         [LabelText("Variable Type")]
-        [ValueDropdown(nameof(GetTypes), DropdownHeight = 400)]
+        [ShowInInspector]
         public Type SelectedType;
 
         [BoxGroup("Settings")]
@@ -39,6 +39,16 @@ namespace Ripple.EditorTools
         [BoxGroup("Generate")]
         public bool GenerateEventListener = true;
 
+        [Header("Debug")]
+        [ShowInInspector, DisplayAsString, ShowIf(nameof(SelectedType))]
+        string TypeName => SelectedType?.Name;
+
+        [ShowInInspector, DisplayAsString, ShowIf(nameof(SelectedType))]
+        string safeTypeName => GetSafeTypeName(SelectedType);
+
+        [ShowInInspector, DisplayAsString, ShowIf(nameof(SelectedType))]
+        string genericType => SelectedType?.FullName.Replace('+', '.');
+
         [Button(ButtonSizes.Large)]
         private void Generate()
         {
@@ -53,18 +63,18 @@ namespace Ripple.EditorTools
 
             string typeName = SelectedType.Name;
             string safeTypeName = GetSafeTypeName(SelectedType);
-            string genericType = SelectedType.FullName;
+            string genericType = SelectedType?.FullName.Replace('+', '.'); //A nested enum will show as "NestedType+EnumType"
 
             if (GenerateVariable)
-                CreateFile($"{safeTypeName}VariableSO",
+                CreateFile(typeName, $"{safeTypeName}VariableSO",
                     GenerateVariableClass(safeTypeName, typeName, genericType));
 
             if (GenerateEvent)
-                CreateFile($"{safeTypeName}Event",
+                CreateFile(typeName, $"{safeTypeName}Event",
                     GenerateEventClass(safeTypeName, typeName, genericType));
 
             if (GenerateEventListener)
-                CreateFile($"EventListener{safeTypeName}",
+                CreateFile(typeName, $"EventListener{safeTypeName}",
                     GenerateEventListenerClass(safeTypeName, typeName, genericType));
 
             AssetDatabase.Refresh();
@@ -81,6 +91,7 @@ namespace Ripple.EditorTools
 
 namespace {TargetNamespace}
 {{
+    [RippleData]
     [CreateAssetMenu(menuName = Config.VariableMenu + ""{menuName}"")]
     public class {safeName}VariableSO : VariableSO<{genericType}> {{ }}
 }}";
@@ -112,7 +123,7 @@ namespace {TargetNamespace}
         // Helpers
         // -----------------------------
 
-        private void CreateFile(string className, string contents)
+        private void CreateFile(string folderName, string className, string contents)
         {
             string path = Path.Combine(OutputFolder, className + ".cs");
 
@@ -127,6 +138,8 @@ namespace {TargetNamespace}
 
         private static string GetSafeTypeName(Type type)
         {
+            if (type == null)
+                return "";
             if (type == typeof(int)) return "Int";
             if (type == typeof(float)) return "Float";
             if (type == typeof(bool)) return "Bool";
@@ -134,6 +147,26 @@ namespace {TargetNamespace}
 
             return type.Name.Replace("`1", "");
         }
+
+        private static List<Type> filteredTypeList;
+
+        //private static IEnumerable<Type> GetFilteredTypes()
+        //{
+        //    if (filteredTypeList == null)
+        //    {
+        //        filteredTypeList = AppDomain.CurrentDomain
+        //            .GetAssemblies()
+        //            .SelectMany(a => a.GetTypes()).ToList();
+        //    }
+
+        //    return filteredTypeList;
+        //    //.Where(t =>
+        //    //    t.IsPublic &&
+        //    //    !t.IsAbstract &&
+        //    //    !t.IsGenericType &&
+        //    //    !t.IsInterface &&
+        //    //    !t.IsNested);
+        //}
 
         private static IEnumerable<ValueDropdownItem<Type>> GetTypes()
         {
