@@ -39,13 +39,15 @@ namespace Ripple.EditorTools
         [BoxGroup("Generate")]
         public bool GenerateEventListener = true;
 
-        [Header("Debug")]
+        [BoxGroup("Type Selection")]
         [ShowInInspector, DisplayAsString, ShowIf(nameof(SelectedType))]
         string TypeName => SelectedType?.Name;
 
+        [BoxGroup("Type Selection")]
         [ShowInInspector, DisplayAsString, ShowIf(nameof(SelectedType))]
         string safeTypeName => GetSafeTypeName(SelectedType);
 
+        [BoxGroup("Type Selection")]
         [ShowInInspector, DisplayAsString, ShowIf(nameof(SelectedType))]
         string genericType => SelectedType?.FullName.Replace('+', '.');
 
@@ -125,7 +127,7 @@ namespace {TargetNamespace}
 
         private void CreateFile(string folderName, string className, string contents)
         {
-            string path = Path.Combine(OutputFolder, className + ".cs");
+            string path = Path.Combine(OutputFolder + $"/{folderName}", className + ".cs");
 
             if (File.Exists(path))
             {
