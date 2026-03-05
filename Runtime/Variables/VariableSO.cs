@@ -6,18 +6,32 @@ using UnityEngine;
 namespace Ripple
 {
     [InlineEditor]
-    public class VariableSO<T> : BaseVariable<T>
+    public class VariableSO<T> : BaseVariable<T> //TODO: Remove Odin attributes and implement dedicated editor behaviour in separate editor script
     {
         private protected T _currentValue;
 
-        [SerializeField, HideInPlayMode] private T _initialValue;
+        [SerializeField, HideInPlayMode]
+        [HideIf("@isClamped || UnityEditor.EditorApplication.isPlaying")]
+        private protected T _initialValue;
 
         private T _previousValue;
 
         public override T CurrentValue => _currentValue;
 
 #if UNITY_EDITOR
-        [ShowInInspector, HideInEditorMode, LabelText("Value")]
+        protected bool isClamped
+        {
+            get
+            {
+                if (this is NumericalVariable<T> nv)
+                    return nv._isClamped;
+
+                return false;
+            }
+        }
+
+        [ShowInInspector, LabelText("Value")]
+        [HideIf("@isClamped || !UnityEditor.EditorApplication.isPlaying")]
         private T EditorValue
         {
             get => _currentValue;

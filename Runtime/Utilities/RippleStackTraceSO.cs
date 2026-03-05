@@ -1,4 +1,4 @@
-﻿using Sirenix.OdinInspector;
+using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +13,7 @@ namespace Ripple
     {
 #if UNITY_EDITOR
         [SerializeField, TextArea, HideInInlineEditors]
+        [PropertyOrder(-1)]
         private string _developerNotes;
 
         [BoxGroup("Debug", order: 1, CenterLabel = true, HideWhenChildrenAreInvisible = true)]
