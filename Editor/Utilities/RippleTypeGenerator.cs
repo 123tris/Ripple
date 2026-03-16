@@ -34,10 +34,17 @@ namespace Ripple.EditorTools
         public bool GenerateVariable = true;
 
         [BoxGroup("Generate")]
+        public bool GenerateVariableListener = true;
+
+        [BoxGroup("Generate")]
+        public bool GenerateVariableReference = true;
+
+        [BoxGroup("Generate")]
         public bool GenerateEvent = true;
 
         [BoxGroup("Generate")]
         public bool GenerateEventListener = true;
+
 
         [BoxGroup("Type Selection")]
         [ShowInInspector, DisplayAsString, ShowIf(nameof(SelectedType))]
@@ -71,6 +78,14 @@ namespace Ripple.EditorTools
                 CreateFile(typeName, $"{safeTypeName}VariableSO",
                     GenerateVariableClass(safeTypeName, typeName, genericType));
 
+            if (GenerateVariableReference)
+                CreateFile(typeName, $"{safeTypeName}Reference",
+                    GenerateVariableReferenceClass(safeTypeName, genericType));
+
+            if (GenerateVariableReference)
+                CreateFile(typeName, $"VariableListener{safeTypeName}",
+                    GenerateVariableListenerClass(safeTypeName, typeName, genericType));
+
             if (GenerateEvent)
                 CreateFile(typeName, $"{safeTypeName}Event",
                     GenerateEventClass(safeTypeName, typeName, genericType));
@@ -96,6 +111,35 @@ namespace {TargetNamespace}
     [RippleData]
     [CreateAssetMenu(menuName = Config.VariableMenu + ""{menuName}"")]
     public class {safeName}VariableSO : VariableSO<{genericType}> {{ }}
+}}";
+        }
+
+        private string GenerateVariableListenerClass(string safeName, string menuName, string genericType)
+        {
+            return $@"
+using UnityEngine;
+
+namespace Ripple
+{{
+    [AddComponentMenu(Config.VariableListenerMenu + ""Variable Listener {menuName}"")]
+    public class VariableListener{safeName} : VariableListener<{genericType}> {{ }}
+}}
+";
+        }
+
+        private string GenerateVariableReferenceClass(string safeName, string genericType)
+        {
+            return $@"using UnityEngine;
+
+namespace {TargetNamespace}
+{{ 
+    [System.Serializable]
+    public class {safeName}Reference : VariableReference<{genericType}> 
+    {{
+        public {safeName}Reference({genericType} value) : base(value) {{ }}
+
+        public {safeName}Reference() {{ }}
+    }}
 }}";
         }
 

@@ -21,7 +21,7 @@ namespace Ripple
         private bool disableLogging = false;
 
         [ShowInInspector, BoxGroup("Debug", order: 1), HideInInlineEditors, PropertySpace(0, 5)]
-        [HideReferenceObjectPicker, ListDrawerSettings(DraggableItems = false,HideAddButton = true, HideRemoveButton = true)]
+        [HideReferenceObjectPicker, ListDrawerSettings(DraggableItems = false, HideAddButton = true, HideRemoveButton = true)]
         protected List<StacktraceItem> stackTrace = new();
 #endif
         private protected const int STACK_TRACE_DEPTH = 12;
