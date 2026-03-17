@@ -47,7 +47,7 @@ namespace Ripple
                         EditorGUIUtility.PingObject(logEntry.context);
                     }
 
-                    var labelStyle = new GUIStyle(EditorStyles.label); // avoid modifying shared style
+                    var labelStyle = new GUIStyle(EditorStyles.label);
                     labelStyle.richText = true;
 
                     GUILayout.Label(logEntry.message, labelStyle);
