@@ -24,7 +24,7 @@ namespace Ripple
         [HideReferenceObjectPicker, ListDrawerSettings(DraggableItems = false, HideAddButton = true, HideRemoveButton = true)]
         protected List<StacktraceItem> stackTrace = new();
 #endif
-        private protected const int STACK_TRACE_DEPTH = 12;
+        private protected const int STACK_TRACE_DEPTH = 20;
 
         protected void LogInvoke<T>(T parameter, UnityEngine.Object context = null) //Consider using [CallerMemberName]
         {
