@@ -33,9 +33,14 @@ namespace Ripple
 
         public override void SetCurrentValue(T value)
         {
+            SetCurrentValue(value, null);
+        }
+
+        public override void SetCurrentValue(T value, Object context)
+        {
             if (_isClamped)
                 value = Clamp(value);
-            base.SetCurrentValue(value);
+            base.SetCurrentValue(value, context);
         }
 
         protected abstract T Clamp(T value);

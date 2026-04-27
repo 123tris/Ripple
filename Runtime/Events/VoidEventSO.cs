@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Sirenix.OdinInspector;
 using UltEvents;
@@ -31,6 +31,11 @@ namespace Ripple
 
         [Button, PropertySpace(SpaceAfter = 10)]
         public void Invoke()
+        {
+            Invoke(null);
+        }
+
+        public void Invoke(UnityEngine.Object context)
         {
 #if UNITY_EDITOR
             StacktraceItem item = GetStracktraceItem(STACK_TRACE_DEPTH);

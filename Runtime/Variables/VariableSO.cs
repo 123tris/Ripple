@@ -1,4 +1,5 @@
 using Sirenix.OdinInspector;
+using System;
 using System.Collections.Generic;
 using UltEvents;
 using UnityEngine;
@@ -41,12 +42,20 @@ namespace Ripple
 
         public virtual void SetCurrentValue(T value)
         {
+            SetCurrentValue(value, CurrentInvoker);
+        }
+
+        public virtual void SetCurrentValue(T value, UnityEngine.Object context)
+        {
             _previousValue = _currentValue;
             _currentValue = value;
             if (Application.isPlaying)
             {
-                LogInvoke(value);
+                LogInvoke(value, context);
+                var prev = CurrentInvoker;
+                CurrentInvoker = this;
                 OnValueChanged?.Invoke(value);
+                CurrentInvoker = prev;
             }
         }
 
@@ -99,6 +108,9 @@ namespace Ripple
 
     public abstract class BaseVariable : RippleStackTraceSO
     {
+        [ThreadStatic]
+        public static UnityEngine.Object CurrentInvoker;
+
         protected static List<BaseVariable> instances = new();
 
         protected virtual void OnEnable()

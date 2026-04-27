@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Sirenix.OdinInspector;
 using UltEvents;
@@ -31,9 +31,9 @@ namespace Ripple
         }
 
         [Button, BoxGroup("Debug")]
-        public virtual void Invoke(T parameter)
+        public virtual void Invoke(T parameter, UnityEngine.Object context)
         {
-            LogInvoke(parameter);
+            LogInvoke(parameter, context);
             if (response == null) return;
 
             if (!response.HasCalls)
@@ -42,10 +42,19 @@ namespace Ripple
             response.Invoke(parameter);
         }
 
+        public virtual void Invoke(T parameter)
+        {
+            Invoke(parameter, null);
+        }
+
+        public void Invoke(VariableSO<T> parameter, UnityEngine.Object context)
+        {
+            Invoke(parameter.CurrentValue, context);
+        }
+
         public void Invoke(VariableSO<T> parameter)
         {
-            LogInvoke(parameter.CurrentValue);
-            Invoke(parameter.CurrentValue);
+            Invoke(parameter.CurrentValue, null);
         }
 
         public bool HasListeners => response != null;

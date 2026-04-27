@@ -17,7 +17,7 @@ namespace Ripple
         private string _developerNotes;
 
         [BoxGroup("Debug", order: 1, CenterLabel = true, HideWhenChildrenAreInvisible = true)]
-        [SerializeField, HideInInlineEditors, PropertySpace(0,5)]
+        [SerializeField, HideInInlineEditors, PropertySpace(0, 5)]
         private bool disableLogging = false;
 
         [ShowInInspector, BoxGroup("Debug", order: 1), HideInInlineEditors, PropertySpace(0, 5)]
@@ -26,7 +26,7 @@ namespace Ripple
 #endif
         private protected const int STACK_TRACE_DEPTH = 12;
 
-        protected void LogInvoke<T>(T parameter)
+        protected void LogInvoke<T>(T parameter, UnityEngine.Object context = null) //Consider using [CallerMemberName]
         {
 #if UNITY_EDITOR
             StacktraceItem item = GetStracktraceItem(STACK_TRACE_DEPTH);
@@ -36,11 +36,16 @@ namespace Ripple
             else
                 item.name = GetCaller(3);
 
+            item.context = context;
+            item.self = this; // the SO being written to / event being fired
+
             stackTrace.Add(item);
             if (disableLogging) return;
-            Logger.Log(
-                $"Called by: <color=red>{stackTrace.Last().name}</color> \nWith value: <color=green>{parameter}</color>",
-                this);
+
+            string contextString = context != null ? $" \nContext: <color=yellow>{context.name}</color>" : string.Empty;
+
+            Logger.Log($"Called by: <color=red>{stackTrace.Last().name}</color> \n" +
+                $"With value: <color=green>{parameter}</color>{contextString}",this);
 #endif
         }
 
@@ -105,10 +110,17 @@ namespace Ripple
         [Serializable]
         public class StacktraceItem
         {
-            [HideInInspector]
-            public string name;
+            [HideInInspector] public string name;
 
-            [HideLabel, FoldoutGroup("@name"), DisplayAsString(EnableRichText = true, Overflow = false)]
+            [FoldoutGroup("@name")]
+            [HorizontalGroup("@name/Context"), HideLabel, ReadOnly]  // The SO that was modified/invoked (always 'this')
+            public UnityEngine.Object self;
+
+            
+            [HorizontalGroup("@name/Context"), LabelText("←"), ReadOnly] // The external object that triggered it (the 'context' param)
+            public UnityEngine.Object context;
+
+            [FoldoutGroup("@name"), DisplayAsString(EnableRichText = true, Overflow = false), HideLabel]
             public string strackTraceText;
         }
     }
