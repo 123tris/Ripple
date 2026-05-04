@@ -1,58 +1,42 @@
-﻿using System;
-using System.Linq;
+using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
-using UltEvents;
 using UnityEngine;
 
 namespace Ripple
 {
     [RippleData]
-    [CreateAssetMenu(menuName = "Events/Void")]
-    public class VoidEventSO : GameEvent
+    [CreateAssetMenu(menuName = Config.EventMenu + "Void")]
+    public class VoidEventSO : GameEvent<Unit>
     {
-        [SerializeField] private UltEvent gameEvent;
-
-        protected void OnEnable()
-        {
-            hideFlags = HideFlags.DontUnloadUnusedAsset;
-            
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.playModeStateChanged += state =>
-            {
-                if (state == UnityEditor.PlayModeStateChange.ExitingEditMode)
-                {
-                    invokeStackTraces.Clear();
-                    if (clearListenersOnPlaymode)
-                        gameEvent.Clear();
-                }
-            };
-#endif
-        }
+        private readonly Dictionary<Action, Action<Unit>> _wrappers = new();
 
         [Button]
         public void Invoke()
         {
-#if UNITY_EDITOR
-            invokeStackTraces.Add(GetCaller(2));
-            Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color>", this);
-#endif
-            gameEvent?.Invoke();
+            Invoke(Unit.Default, null);
         }
 
-        public bool HasListeners => gameEvent != null;
-
-        public void AddListener(Action method) => gameEvent += method;
-
-        public void RemoveListener(Action method) => gameEvent -= method;
-
-        public override void AddGenericListener(Delegate method)
+        public void Invoke(UnityEngine.Object invoker)
         {
-            gameEvent.AddPersistentCall(method);
+            Invoke(Unit.Default, invoker);
         }
 
-        public override void RemoveGenericListener(Delegate method)
+        public void AddListener(Action method)
         {
-            gameEvent.RemovePersistentCall(method);
+            if (method == null) return;
+            if (_wrappers.ContainsKey(method)) return;
+            Action<Unit> wrapper = _ => method();
+            _wrappers[method] = wrapper;
+            AddListener(wrapper);
+        }
+
+        public void RemoveListener(Action method)
+        {
+            if (method == null) return;
+            if (!_wrappers.TryGetValue(method, out var wrapper)) return;
+            _wrappers.Remove(method);
+            RemoveListener(wrapper);
         }
     }
 }

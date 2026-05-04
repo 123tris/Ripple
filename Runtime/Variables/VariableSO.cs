@@ -1,20 +1,24 @@
 using System;
-using System.Collections.Generic;
 using Sirenix.OdinInspector;
-using UltEvents;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+#if ULTEVENTS
+using UltEvents;
+#else
+using UnityEngine.Events;
+#endif
 
 namespace Ripple
 {
+    [RippleData]
     [InlineEditor]
-    public class VariableSO<T> : BaseVariable<T>
+    public class VariableSO<T> : BaseVariable<T>, IVariable<T>
     {
         [SerializeField, HideInInspector] private protected T _currentValue;
 
         [SerializeField, HideInPlayMode] private T _initialValue;
 
         private T _previousValue;
+        private bool _hasPreviousValue;
 
         public override T CurrentValue => _currentValue;
 
@@ -29,22 +33,54 @@ namespace Ripple
 
         public virtual void SetCurrentValue(T value)
         {
+            SetCurrentValue(value, null);
+        }
+
+        public virtual void SetCurrentValue(T value, UnityEngine.Object invoker)
+        {
             _previousValue = _currentValue;
+            _hasPreviousValue = true;
             _currentValue = value;
             if (Application.isPlaying)
             {
-                LogInvoke(value);
-                OnValueChanged?.Invoke(value);
+                LogInvoke(value, invoker);
+                try
+                {
+                    OnValueChanged?.Invoke(value);
+                }
+                catch (Exception exception)
+                {
+#if UNITY_EDITOR
+                    Logger.Log(new LogMetadata
+                    {
+                        Message = $"Exception while changing variable <color=yellow>{name}</color> to <color=green>{value}</color>",
+                        Context = this,
+                        Invoker = invoker,
+                        Caller = exception.TargetSite?.Name ?? "unknown",
+                        FullStackTrace = exception.StackTrace ?? string.Empty,
+                        HasException = true,
+                        ExceptionDetails = exception.ToString(),
+                        SourceKind = LogSourceKind.VariableChange
+                    });
+#endif
+                    throw;
+                }
             }
         }
 
-        public T PreviousValue => _previousValue ?? _initialValue;
+        public T PreviousValue => _hasPreviousValue ? _previousValue : _initialValue;
 
-        [HideInInlineEditors] public UltEvent<T> OnValueChanged;
+        [HideInInlineEditors]
+#if ULTEVENTS
+        public UltEvent<T> OnValueChanged;
+#else
+        public UnityEvent<T> OnValueChanged;
+#endif
 
         protected override void ResetValue()
         {
             _currentValue = _initialValue;
+            _hasPreviousValue = false;
         }
 
         public override object Value => _currentValue;
@@ -67,7 +103,6 @@ namespace Ripple
             if (playModeState == UnityEditor.PlayModeStateChange.ExitingEditMode)
             {
                 ResetValue();
-                invokeStackTraces.Clear();
             }
         }
 

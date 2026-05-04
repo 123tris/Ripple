@@ -2,6 +2,7 @@
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
+using Ripple;
 
 namespace Ripple
 {
@@ -48,13 +49,40 @@ namespace Ripple
 
             useConstant.boolValue = result == 0;
 
-            EditorGUI.PropertyField(position, useConstant.boolValue ? constantValue : variable, GUIContent.none);
+            var valueRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            EditorGUI.PropertyField(valueRect, useConstant.boolValue ? constantValue : variable, GUIContent.none);
+
+            bool showWarning = false;
+            if (!useConstant.boolValue && property.type.Contains("NumericVariableReference") && variable.objectReferenceValue != null)
+            {
+                if (variable.objectReferenceValue is not INumericVariable)
+                {
+                    showWarning = true;
+                    var warningRect = new Rect(position.x, valueRect.yMax + 2f, position.width, EditorGUIUtility.singleLineHeight * 2f);
+                    EditorGUI.HelpBox(warningRect, "Selected variable is not numeric. Assign IntVariableSO or FloatVariableSO.", MessageType.Warning);
+                }
+            }
 
             if (EditorGUI.EndChangeCheck())
                 property.serializedObject.ApplyModifiedProperties();
 
             EditorGUI.indentLevel = indent;
             EditorGUI.EndProperty();
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            float baseHeight = EditorGUIUtility.singleLineHeight;
+            SerializedProperty useConstant = property.FindPropertyRelative("useConstant");
+            SerializedProperty variable = property.FindPropertyRelative("_variable");
+            bool showWarning = useConstant != null &&
+                               variable != null &&
+                               !useConstant.boolValue &&
+                               property.type.Contains("NumericVariableReference") &&
+                               variable.objectReferenceValue != null &&
+                               variable.objectReferenceValue is not INumericVariable;
+
+            return showWarning ? baseHeight + EditorGUIUtility.singleLineHeight * 2f + 4f : baseHeight;
         }
     }
 

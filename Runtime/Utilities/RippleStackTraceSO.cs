@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -13,63 +11,74 @@ namespace Ripple
         [SerializeField, TextArea, HideInInlineEditors]
         private string _developerNotes;
 
-        [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors, HorizontalGroup("Debug/Disable"), LabelWidth(100)]
-        private bool disableLogging = false;
-        
-        [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors, HorizontalGroup("Debug/Disable"), LabelWidth(125)]
-        private bool disableStackTrace = false;
+        [ShowInInspector, ShowIf(nameof(HasTraceHistory)), BoxGroup("Debug", order: 1), HideInInlineEditors,
+         LabelText("Call stack history"),
+         ListDrawerSettings(ShowFoldout = true, DraggableItems = false, HideAddButton = true, HideRemoveButton = true)]
+        private System.Collections.Generic.IReadOnlyList<LogEntry> TraceHistory
+        {
+            get
+            {
+                var contextLogs = Logger.GetLogsForContext(this);
+                return contextLogs.Skip(Math.Max(0, contextLogs.Count - 25)).ToList();
+            }
+        }
 
-        [ShowInInspector, DisplayAsString, ShowIf("@invokeStackTraces.Count > 0"),
-         LabelText("This Event is getting called by:"), BoxGroup("Debug", order: 1), HideInInlineEditors]
-        protected List<string> invokeStackTraces = new();
+        private bool HasTraceHistory => Logger.GetLogsForContext(this).Count > 0;
 
 #endif
 
         protected void LogInvoke<T>(T parameter)
         {
-#if UNITY_EDITOR
+            LogInvoke(parameter, null);
+        }
 
-            if (!disableStackTrace)
+        protected void LogInvoke<T>(T parameter, UnityEngine.Object invoker)
+        {
+#if UNITY_EDITOR
+            const int baseSkipFrames = 3;
+            var stackTrace = StackTraceUtility.BuildStackTrace(baseSkipFrames);
+            var caller = StackTraceUtility.ResolveCaller(stackTrace, baseSkipFrames);
+            var fullStackTrace = StackTraceUtility.FormatStackTrace(stackTrace, baseSkipFrames);
+
+            Logger.Log(new LogMetadata
             {
-                if (this is NumericalVariable<T>)
-                    invokeStackTraces.Add(GetCaller(4));
-                else
-                    invokeStackTraces.Add(GetCaller(3));
-            }
-            
-            if (disableLogging) return;
-            Logger.Log(
-                $"Called by: <color=red>{invokeStackTraces.LastOrDefault()}</color> \nWith value: <color=green>{parameter}</color>",
-                this);
+                Message = $"Called by: <color=red>{caller}</color> \nWith value: <color=green>{parameter}</color>",
+                Context = this,
+                Invoker = invoker,
+                Caller = caller,
+                FullStackTrace = fullStackTrace,
+                HasException = false,
+                ExceptionDetails = string.Empty,
+                SourceKind = this is BaseVariable ? LogSourceKind.VariableChange : LogSourceKind.EventInvoke
+            });
 #endif
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private protected string GetCaller(int level)
+        protected void LogInvoke()
         {
-            System.Diagnostics.StackTrace stackTrace = new();
+            LogInvoke(null);
+        }
 
-            Type declaringType = stackTrace.GetFrame(level).GetMethod().DeclaringType.BaseType;
-            if (declaringType == typeof(System.Reflection.MethodInfo))
+        protected void LogInvoke(UnityEngine.Object invoker)
+        {
+#if UNITY_EDITOR
+            const int baseSkipFrames = 3;
+            var stackTrace = StackTraceUtility.BuildStackTrace(baseSkipFrames);
+            var caller = StackTraceUtility.ResolveCaller(stackTrace, baseSkipFrames);
+            var fullStackTrace = StackTraceUtility.FormatStackTrace(stackTrace, baseSkipFrames);
+
+            Logger.Log(new LogMetadata
             {
-                level = stackTrace.FrameCount - 1;
-                // if (stackTrace.FrameCount >= 6 && stackTrace.GetFrame(6).GetMethod().DeclaringType ==
-                //     typeof(UltEvents.PersistentCall))
-                // {
-                //     //being called by ultevent
-                // }
-            }
-
-            var m = stackTrace.GetFrame(level).GetMethod();
-
-            // .Name is the name only, .FullName includes the namespace
-            var className = m.DeclaringType.FullName;
-
-            //the method/function name you are looking for.
-            var methodName = m.Name;
-
-            //returns a composite of the namespace, class and method name.
-            return className + "->" + methodName;
+                Message = $"Called by: <color=red>{caller}</color>",
+                Context = this,
+                Invoker = invoker,
+                Caller = caller,
+                FullStackTrace = fullStackTrace,
+                HasException = false,
+                ExceptionDetails = string.Empty,
+                SourceKind = LogSourceKind.EventInvoke
+            });
+#endif
         }
     }
 }

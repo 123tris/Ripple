@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,12 +7,10 @@ using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 public class RippleWizard : OdinMenuEditorWindow
 {
     private static string[] _cachedGuids;
-
 
     [MenuItem("Tools/Open Ripple Wizard")]
     static void OpenWindow() => GetWindow<RippleWizard>();
@@ -21,22 +19,21 @@ public class RippleWizard : OdinMenuEditorWindow
 
     protected override OdinMenuTree BuildMenuTree()
     {
-        OdinMenuTree tree = new();
+        var tree = new OdinMenuTree();
 
-        var customMenuStyle = new OdinMenuStyle()
+        tree.Config.SearchToolbarHeight = 22;
+
+        tree.DefaultMenuStyle = new OdinMenuStyle
         {
-            Height = 22, Offset = 15.00f, IndentAmount = 10.00f, IconSize = 16.00f, IconOffset = 0.00f,
-            NotSelectedIconAlpha = 0.89f, IconPadding = 0.00f, TriangleSize = 16.00f, TrianglePadding = 0.00f,
-            AlignTriangleLeft = true, Borders = true, BorderPadding = 0.00f, BorderAlpha = 0.32f,
-            SelectedColorDarkSkin = new Color(0.243f, 0.373f, 0.588f, 1.000f),
-            SelectedColorLightSkin = new Color(0.243f, 0.490f, 0.900f, 1.000f)
+            Height = 22, Offset = 15f, IndentAmount = 10f, IconSize = 16f,
+            NotSelectedIconAlpha = 0.89f, TriangleSize = 16f, AlignTriangleLeft = true,
+            Borders = true, BorderAlpha = 0.32f,
+            SelectedColorDarkSkin = new Color(0.243f, 0.373f, 0.588f, 1f),
+            SelectedColorLightSkin = new Color(0.243f, 0.490f, 0.900f, 1f)
         };
-        tree.DefaultMenuStyle = customMenuStyle;
 
         string[] guids = GetOrCacheGuids();
-
-        var types = TypesToDisplay;
-        var validTypes = new HashSet<Type>(types);
+        var validTypes = new HashSet<Type>(TypesToDisplay);
 
         foreach (string guid in guids)
         {
@@ -45,38 +42,50 @@ public class RippleWizard : OdinMenuEditorWindow
 
             if (assetType != null && validTypes.Contains(assetType))
             {
-                string menuPath = assetType.Name + "/" + Path.GetFileNameWithoutExtension(assetPath);
+                string assetName = Path.GetFileNameWithoutExtension(assetPath);
+                string menuPath = BuildMenuPath(assetPath, assetType, assetName);
                 tree.AddAssetAtPath(menuPath, assetPath);
             }
         }
 
         tree.EnumerateTree().AddThumbnailIcons(true);
-
         return tree;
     }
 
     private static string[] GetOrCacheGuids()
     {
         if (_cachedGuids != null)
+            return _cachedGuids;
+
+        var types = TypesToDisplay;
+        if (types.Length == 0)
         {
+            _cachedGuids = Array.Empty<string>();
             return _cachedGuids;
         }
 
-        var types = TypesToDisplay;
-
-        string filter = "t:" + string.Join(" t:", types.Select(t => t.Name));
-
-        if (filter.Length > 1000 || string.IsNullOrWhiteSpace(filter))
+        // Batch FindAssets calls per type to avoid the >1000 char filter bug
+        var allGuids = new HashSet<string>();
+        foreach (var type in types)
         {
-            filter = "t:ScriptableObject";
+            var guids = AssetDatabase.FindAssets("t:" + type.Name, new[] { "Assets" });
+            foreach (var guid in guids)
+                allGuids.Add(guid);
         }
 
-        _cachedGuids = AssetDatabase.FindAssets(filter, new[] { "Assets" });
-
+        _cachedGuids = allGuids.ToArray();
         return _cachedGuids;
     }
 
-    private void RefreshAssets()
+    private static string BuildMenuPath(string assetPath, Type assetType, string assetName)
+    {
+        var asset = AssetDatabase.LoadAssetAtPath<GameEvent>(assetPath);
+        if (asset != null && asset.Group != null)
+            return asset.Group.DisplayName + "/" + assetName;
+        return assetType.Name + "/" + assetName;
+    }
+
+    public void RefreshAssets()
     {
         _cachedGuids = null;
         ForceMenuTreeRebuild();
@@ -84,21 +93,31 @@ public class RippleWizard : OdinMenuEditorWindow
 
     protected override void OnBeginDrawEditors()
     {
-        var toolbarHeight = this.MenuTree.Config.SearchToolbarHeight;
+        var toolbarHeight = MenuTree.Config.SearchToolbarHeight;
 
         SirenixEditorGUI.BeginHorizontalToolbar(toolbarHeight);
-        {
-            GUILayout.Label("Cached Assets: " + (_cachedGuids?.Length.ToString() ?? "0"));
-
-            GUILayout.FlexibleSpace();
-            
-            GUIContent refreshButtonContent = new(EditorIcons.Refresh.Raw, "Refresh Asset List");
-
-            if (SirenixEditorGUI.ToolbarButton(refreshButtonContent))
-            {
-                RefreshAssets();
-            }
-        }
+        GUILayout.Label("Assets: " + (_cachedGuids?.Length.ToString() ?? "—"));
+        GUILayout.FlexibleSpace();
+        if (SirenixEditorGUI.ToolbarButton(new GUIContent(EditorIcons.Refresh.Raw, "Refresh Asset List")))
+            RefreshAssets();
         SirenixEditorGUI.EndHorizontalToolbar();
+    }
+
+    private class RippleAssetWatcher : AssetPostprocessor
+    {
+        static void OnPostprocessAllAssets(
+            string[] importedAssets, string[] deletedAssets,
+            string[] movedAssets, string[] movedFromAssetPaths)
+        {
+            bool anyScriptableObject =
+                importedAssets.Concat(deletedAssets).Concat(movedAssets)
+                    .Any(p => p.EndsWith(".asset", StringComparison.OrdinalIgnoreCase));
+
+            if (!anyScriptableObject) return;
+
+            _cachedGuids = null;
+            var window = Resources.FindObjectsOfTypeAll<RippleWizard>().FirstOrDefault();
+            window?.ForceMenuTreeRebuild();
+        }
     }
 }

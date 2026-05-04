@@ -1,0 +1,24 @@
+{
+    "name": "Metz.Ripple.EditModeTests",
+    "rootNamespace": "Ripple.Tests",
+    "references": [
+        "Metz.Ripple.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "ODIN_INSPECTOR",
+        "ULTEVENTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

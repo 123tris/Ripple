@@ -15,6 +15,11 @@ namespace Ripple
 
         void OnEnable()
         {
+            if (variable == null)
+            {
+                Debug.LogWarning($"{nameof(VariableListener<T>)} on {name} has no variable assigned.", this);
+                return;
+            }
             variable.OnValueChanged += OnValueChanged;
         }
 
@@ -25,6 +30,8 @@ namespace Ripple
 
         void OnDisable()
         {
+            if (variable == null)
+                return;
             variable.OnValueChanged -= OnValueChanged;
         }
     }

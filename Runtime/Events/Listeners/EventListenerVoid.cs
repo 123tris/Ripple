@@ -13,9 +13,22 @@ namespace Ripple
         [SerializeField]
         private UltEvent _response;
 
-        void OnEnable() => _event.AddListener(OnEvent);
+        void OnEnable()
+        {
+            if (_event == null)
+            {
+                Debug.LogWarning($"{nameof(EventListenerVoid)} on {name} has no event assigned.", this);
+                return;
+            }
+            _event.AddListener(OnEvent);
+        }
 
-        void OnDisable() => _event.RemoveListener(OnEvent);
+        void OnDisable()
+        {
+            if (_event == null)
+                return;
+            _event.RemoveListener(OnEvent);
+        }
 
         private void OnEvent()
         {

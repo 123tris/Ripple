@@ -6,77 +6,102 @@ using UnityEngine;
 
 namespace Ripple
 {
+    [RippleData]
     [InlineEditor]
     public class VariableListSO<T> : RippleStackTraceSO, IList<T>
     {
         [SerializeField]
-        private List<T> _currentValue;
+        private List<T> _currentValue = new();
+
+        [SerializeField, HideInPlayMode]
+        private List<T> _initialValue = new();
 
         public List<T> CurrentValues => _currentValue;
 
         public Action<T> OnItemAdded;
         public Action<T> OnItemRemoved;
-        
-        public IEnumerator<T> GetEnumerator()
+        public Action<int, T> OnItemChanged;
+        public Action OnCleared;
+
+#if UNITY_EDITOR
+        protected void OnEnable()
         {
-            return _currentValue.GetEnumerator();
+            UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeChanged;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        protected void OnDisable()
         {
-            return ((IEnumerable)_currentValue).GetEnumerator();
+            UnityEditor.EditorApplication.playModeStateChanged -= OnPlayModeChanged;
         }
+
+        private void OnPlayModeChanged(UnityEditor.PlayModeStateChange state)
+        {
+            if (state == UnityEditor.PlayModeStateChange.ExitingEditMode)
+                ResetToInitial();
+        }
+#endif
+
+        public void ResetToInitial()
+        {
+            _currentValue = new List<T>(_initialValue);
+            OnCleared?.Invoke();
+        }
+
+        public IEnumerator<T> GetEnumerator() => _currentValue.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_currentValue).GetEnumerator();
 
         public void Add(T item)
         {
-            OnItemAdded?.Invoke(item);
             _currentValue.Add(item);
+            OnItemAdded?.Invoke(item);
         }
 
         public void Clear()
         {
             _currentValue.Clear();
+            OnCleared?.Invoke();
         }
 
-        public bool Contains(T item)
-        {
-            return _currentValue.Contains(item);
-        }
+        public bool Contains(T item) => _currentValue.Contains(item);
 
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            _currentValue.CopyTo(array, arrayIndex);
-        }
+        public void CopyTo(T[] array, int arrayIndex) => _currentValue.CopyTo(array, arrayIndex);
 
         public bool Remove(T item)
         {
-            OnItemRemoved?.Invoke(item);
-            return _currentValue.Remove(item);
+            bool removed = _currentValue.Remove(item);
+            if (removed)
+                OnItemRemoved?.Invoke(item);
+            return removed;
         }
 
         public int Count => _currentValue.Count;
 
         public bool IsReadOnly => (_currentValue as IList<T>).IsReadOnly;
 
-        public int IndexOf(T item)
-        {
-            return _currentValue.IndexOf(item);
-        }
+        public int IndexOf(T item) => _currentValue.IndexOf(item);
 
         public void Insert(int index, T item)
         {
             _currentValue.Insert(index, item);
+            OnItemAdded?.Invoke(item);
         }
 
         public void RemoveAt(int index)
         {
+            T item = _currentValue[index];
             _currentValue.RemoveAt(index);
+            OnItemRemoved?.Invoke(item);
         }
 
         public T this[int index]
         {
             get => _currentValue[index];
-            set => _currentValue[index] = value;
+            set
+            {
+                _currentValue[index] = value;
+                OnItemChanged?.Invoke(index, value);
+            }
         }
     }
 }
