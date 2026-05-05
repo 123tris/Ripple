@@ -1,14 +1,16 @@
 {
   "name": "com.metz.ripple",
-  "version": "0.1.4",
+  "version": "2.0.0",
   "displayName": "Ripple",
-  "description": "Lazy ScriptableObject framework",
+  "description": "ScriptableObject-based event/variable architecture framework for Unity. v2 ground-up redesign.",
   "unity": "2022.1",
   "keywords": [
     "tools",
     "extensions",
     "workflow",
-    "editor"
+    "editor",
+    "scriptableobject",
+    "events"
   ],
   "author": {
     "name": "Tristan Metz",

@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 
 namespace Ripple
 {
-    public class RippleData : Attribute
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class RippleDataAttribute : Attribute
     {
-
+        public string Group { get; }
+        public RippleDataAttribute(string group = null) { Group = group; }
     }
 }

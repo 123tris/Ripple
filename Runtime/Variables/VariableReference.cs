@@ -1,72 +1,46 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Ripple
 {
+    public abstract class VariableReferenceBase { }
+
     [Serializable]
     public class VariableReference<T> : VariableReferenceBase
     {
-        public bool useConstant = true;
-
+        [SerializeField] private bool _useConstant = true;
         [SerializeField] private T _constantValue;
+        [SerializeField] private VariableSO<T> _variable;
 
-        [SerializeField, InlineEditor] private BaseVariable<T> _variable;
+        public bool UseConstant { get => _useConstant; set => _useConstant = value; }
+        public VariableSO<T> Variable { get => _variable; set => _variable = value; }
+        public T ConstantValue { get => _constantValue; set => _constantValue = value; }
 
         public VariableReference() { }
-
-        public VariableReference(T value)
-        {
-            useConstant = true;
-            _constantValue = value;
-        }
+        public VariableReference(T constant) { _useConstant = true; _constantValue = constant; }
+        public VariableReference(VariableSO<T> variable) { _useConstant = false; _variable = variable; }
 
         public T Value
         {
             get
             {
-                if (useConstant)
-                    return _constantValue;
-                if (_variable)
-                    return _variable.CurrentValue;
-                return default;
+                if (_useConstant) return _constantValue;
+                return _variable != null ? _variable.CurrentValue : default;
             }
         }
 
-        public static implicit operator T(VariableReference<T> reference)
+        public IDisposable Subscribe(Action<T> handler)
         {
-            return reference.Value;
+            if (_useConstant || _variable == null) return EmptyDisposable.Instance;
+            return _variable.Subscribe(handler);
+        }
+
+        public static implicit operator T(VariableReference<T> r) => r != null ? r.Value : default;
+
+        private sealed class EmptyDisposable : IDisposable
+        {
+            public static readonly EmptyDisposable Instance = new EmptyDisposable();
+            public void Dispose() { }
         }
     }
-
-    public class VariableReferenceBase { }
-
-    [Serializable]
-    public class BoolReference : VariableReference<bool>
-    {
-        public BoolReference(bool val) : base(val) {}
-
-        public BoolReference() { }
-    }
-
-    [Serializable]
-    public class FloatReference : VariableReference<float>
-    {
-        public FloatReference(float val) : base(val) {}
-
-        public FloatReference() { }
-    }
-    [Serializable] public class IntReference : VariableReference<int>
-    {
-        public IntReference(int val) : base(val) {}
-
-        public IntReference() { }
-    }
-    [Serializable] public class Vector3Reference : VariableReference<Vector3>
-    {
-        public Vector3Reference(Vector3 value) : base(value) { }
-
-        public Vector3Reference() { }
-    }
-    [Serializable] public class GameObjectReference : VariableReference<GameObject> { }
 }

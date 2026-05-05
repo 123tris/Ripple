@@ -1,8 +1,8 @@
 {
     "name": "Metz.Ripple.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "Ripple.Editor",
     "references": [
-        "GUID:609209fb3cbb3e34e82c9ea9cc500f38"
+        "Metz.Ripple.Runtime"
     ],
     "includePlatforms": [
         "Editor"
@@ -12,15 +12,12 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "ODIN_INSPECTOR",
-        "ULTEVENTS"
-    ],
+    "defineConstraints": [],
     "versionDefines": [
         {
             "name": "com.kybernetik.ultevents",
             "expression": "0",
-            "define": "ULTEVENTS"
+            "define": "RIPPLE_ULTEVENTS"
         }
     ],
     "noEngineReferences": false

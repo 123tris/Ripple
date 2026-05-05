@@ -1,24 +1,24 @@
 {
     "name": "Metz.Ripple.Runtime",
-    "rootNamespace": "",
-    "references": [
-        "Kybernetik.UltEvents"
-    ],
+    "rootNamespace": "Ripple",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "ODIN_INSPECTOR",
-        "ULTEVENTS"
-    ],
+    "defineConstraints": [],
     "versionDefines": [
         {
             "name": "com.kybernetik.ultevents",
             "expression": "0",
-            "define": "ULTEVENTS"
+            "define": "RIPPLE_ULTEVENTS"
+        },
+        {
+            "name": "com.cysharp.unitask",
+            "expression": "0",
+            "define": "RIPPLE_ASYNC"
         }
     ],
     "noEngineReferences": false
