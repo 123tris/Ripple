@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+using System;
 using Sirenix.OdinInspector;
 using UltEvents;
 using UnityEngine;
@@ -15,35 +14,45 @@ namespace Ripple
         protected void OnEnable()
         {
             hideFlags = HideFlags.DontUnloadUnusedAsset;
-            
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.playModeStateChanged += state =>
-            {
-                if (state == UnityEditor.PlayModeStateChange.ExitingEditMode)
-                {
-                    invokeStackTraces.Clear();
-                    if (clearListenersOnPlaymode)
-                        gameEvent.Clear();
-                }
-            };
+            UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 #endif
         }
 
+#if UNITY_EDITOR
+        private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+
+        private void OnPlayModeStateChanged(UnityEditor.PlayModeStateChange state)
+        {
+            if (state != UnityEditor.PlayModeStateChange.ExitingEditMode) return;
+            ClearInvokers();
+            if (clearListenersOnPlaymode)
+                gameEvent.Clear();
+        }
+#endif
+
         [Button]
-        public void Invoke()
+        public void Invoke(UnityEngine.Object sender = null)
         {
 #if UNITY_EDITOR
-            invokeStackTraces.Add(GetCaller(2));
-            Logger.Log($"Called by: <color=red>{invokeStackTraces.Last()}</color>", this);
+            RecordInvoke(ResolveVoidCaller(sender), sender, null);
 #endif
             gameEvent?.Invoke();
         }
 
-        public bool HasListeners => gameEvent != null;
+        public bool HasListeners => gameEvent != null && gameEvent.HasCalls;
 
-        public void AddListener(Action method) => gameEvent += method;
+        public void AddListener(Action method)
+        {
+            gameEvent += method;
+            RippleConnectionRegistry.RecordSubscribe(this, method);
+        }
 
-        public void RemoveListener(Action method) => gameEvent -= method;
+        public void RemoveListener(Action method)
+        {
+            gameEvent -= method;
+            RippleConnectionRegistry.RecordUnsubscribe(this, method);
+        }
 
         public override void AddGenericListener(Delegate method)
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+using System;
 using Sirenix.OdinInspector;
 using UltEvents;
 using UnityEngine;
@@ -16,24 +15,28 @@ namespace Ripple
 
         protected void OnEnable()
         {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.playModeStateChanged += state =>
-            {
-                if (state == UnityEditor.PlayModeStateChange.ExitingEditMode)
-                {
-                    invokeStackTraces.Clear();
-                    if (clearListenersOnPlaymode)
-                        response.Clear();
-                }
-            };
-#endif
             hideFlags = HideFlags.DontUnloadUnusedAsset;
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+#endif
         }
 
-        [Button, BoxGroup("Debug")]
-        public virtual void Invoke(T parameter)
+#if UNITY_EDITOR
+        private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+
+        private void OnPlayModeStateChanged(UnityEditor.PlayModeStateChange state)
         {
-            LogInvoke(parameter);
+            if (state != UnityEditor.PlayModeStateChange.ExitingEditMode) return;
+            ClearInvokers();
+            if (clearListenersOnPlaymode)
+                response.Clear();
+        }
+#endif
+
+        [Button, BoxGroup("Debug")]
+        public virtual void Invoke(T parameter, UnityEngine.Object sender = null)
+        {
+            LogInvoke(parameter, sender);
             if (response == null) return;
 
             if (!response.HasCalls)
@@ -42,17 +45,21 @@ namespace Ripple
             response.Invoke(parameter);
         }
 
-        public void Invoke(VariableSO<T> parameter)
+        public void Invoke(VariableSO<T> parameter) => Invoke(parameter.CurrentValue);
+
+        public bool HasListeners => response != null && response.HasCalls;
+
+        public void AddListener(Action<T> method)
         {
-            LogInvoke(parameter.CurrentValue);
-            Invoke(parameter.CurrentValue);
+            response += method;
+            RippleConnectionRegistry.RecordSubscribe(this, method);
         }
 
-        public bool HasListeners => response != null;
-
-        public void AddListener(Action<T> method) => response += method;
-
-        public void RemoveListener(Action<T> method) => response -= method;
+        public void RemoveListener(Action<T> method)
+        {
+            response -= method;
+            RippleConnectionRegistry.RecordUnsubscribe(this, method);
+        }
 
         public override void AddGenericListener(Delegate method)
         {

@@ -1,11 +1,11 @@
-using Ripple;
+using System;
 using UltEvents;
 using UnityEngine;
 
 namespace Ripple
 {
     [AddComponentMenu(Config.EventListenerMenu + "Event Listener Void")]
-    public class EventListenerVoid : MonoBehaviour
+    public class EventListenerVoid : MonoBehaviour, IRippleListener
     {
         [SerializeField]
         private VoidEventSO _event;
@@ -13,9 +13,20 @@ namespace Ripple
         [SerializeField]
         private UltEvent _response;
 
-        void OnEnable() => _event.AddListener(OnEvent);
+        public RippleStackTraceSO Target => _event;
+        public Type ResponseValueType => typeof(void);
 
-        void OnDisable() => _event.RemoveListener(OnEvent);
+        void OnEnable()
+        {
+            if (_event != null)
+                _event.AddListener(OnEvent);
+        }
+
+        void OnDisable()
+        {
+            if (_event != null)
+                _event.RemoveListener(OnEvent);
+        }
 
         private void OnEvent()
         {

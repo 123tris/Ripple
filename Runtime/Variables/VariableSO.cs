@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UltEvents;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Ripple
 {
@@ -27,13 +25,13 @@ namespace Ripple
         }
 #endif
 
-        public virtual void SetCurrentValue(T value)
+        public virtual void SetCurrentValue(T value, UnityEngine.Object sender = null)
         {
             _previousValue = _currentValue;
             _currentValue = value;
             if (Application.isPlaying)
             {
-                LogInvoke(value);
+                LogInvoke(value, sender);
                 OnValueChanged?.Invoke(value);
             }
         }
@@ -41,6 +39,19 @@ namespace Ripple
         public T PreviousValue => _previousValue ?? _initialValue;
 
         [HideInInlineEditors] public UltEvent<T> OnValueChanged;
+
+        /// <summary>Subscribe to value changes. Routes through the connection registry so editor tooling can list listeners.</summary>
+        public void AddListener(Action<T> method)
+        {
+            OnValueChanged += method;
+            RippleConnectionRegistry.RecordSubscribe(this, method);
+        }
+
+        public void RemoveListener(Action<T> method)
+        {
+            OnValueChanged -= method;
+            RippleConnectionRegistry.RecordUnsubscribe(this, method);
+        }
 
         protected override void ResetValue()
         {
@@ -67,17 +78,17 @@ namespace Ripple
             if (playModeState == UnityEditor.PlayModeStateChange.ExitingEditMode)
             {
                 ResetValue();
-                invokeStackTraces.Clear();
+                ClearInvokers();
             }
         }
 
         private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -=
             EditorApplicationOnplayModeStateChanged;
 #endif
-        
+
         protected virtual void ResetValue()
         {
-            
+
         }
     }
 

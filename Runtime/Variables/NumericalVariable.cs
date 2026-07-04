@@ -13,11 +13,11 @@ namespace Ripple
         [SerializeField, ShowIf(nameof(_isClamped)), HorizontalGroup("clamping")]
         public VariableReference<T> max;
 
-        public override void SetCurrentValue(T value)
+        public override void SetCurrentValue(T value, UnityEngine.Object sender = null)
         {
             if (_isClamped)
                 value = Clamp(value);
-            base.SetCurrentValue(value);
+            base.SetCurrentValue(value, sender);
         }
 
         protected abstract T Clamp(T value);
