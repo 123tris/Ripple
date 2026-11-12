@@ -3,21 +3,25 @@ using System.Collections;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Ripple
 {
     [InlineEditor]
-    public class VariableListSO<T> : RippleStackTraceSO, IList<T>
+    public class VariableListSO<T> : BaseVariable, IList<T>
     {
-        [SerializeField] private List<T> _currentValue = new();
+        [SerializeField, FormerlySerializedAs("_currentValue"), HideInPlayMode]
+        private List<T> _initialValues = new();
 
-        [SerializeField, Tooltip("Start every play session empty. Use for sets that scene objects join at runtime.")]
-        private bool _runtimeSet;
+        [NonSerialized, ShowInInspector, HideInEditorMode, LabelText("Values")]
+        private List<T> _currentValue = new();
 
         public Action<T> OnItemAdded;
         public Action<T> OnItemRemoved;
 
         public List<T> CurrentValues => _currentValue;
+
+        public override object Value => _currentValue;
 
         public int Count => _currentValue.Count;
 
@@ -29,33 +33,21 @@ namespace Ripple
             set => _currentValue[index] = value;
         }
 
-        private void OnEnable()
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-#endif
-            ResetRuntimeSet();
-        }
-
-#if UNITY_EDITOR
-        private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-
-        private void OnPlayModeStateChanged(UnityEditor.PlayModeStateChange state)
-        {
-            if (state != UnityEditor.PlayModeStateChange.ExitingEditMode) return;
-            ResetRuntimeSet();
-            ClearInvokers();
-        }
-#endif
-
-        private void ResetRuntimeSet()
-        {
-            if (_runtimeSet) _currentValue.Clear();
-        }
-
         public void Add(T item)
         {
             _currentValue.Add(item);
+            OnItemAdded?.Invoke(item);
+        }
+
+        public void AddRange(IEnumerable<T> items)
+        {
+            foreach (T item in items)
+                Add(item);
+        }
+
+        public void Insert(int index, T item)
+        {
+            _currentValue.Insert(index, item);
             OnItemAdded?.Invoke(item);
         }
 
@@ -66,7 +58,27 @@ namespace Ripple
             return true;
         }
 
-        public void Clear() => _currentValue.Clear();
+        public void RemoveAt(int index)
+        {
+            T item = _currentValue[index];
+            _currentValue.RemoveAt(index);
+            OnItemRemoved?.Invoke(item);
+        }
+
+        public void Resize(int count)
+        {
+            while (Count > count) RemoveAt(Count - 1);
+            while (Count < count) Add(default);
+        }
+
+        public void Clear() => Resize(0);
+
+        [Button, BoxGroup("Debug", order: 1), HideInEditorMode, HideInInlineEditors]
+        public override void ResetValue()
+        {
+            Clear();
+            AddRange(_initialValues);
+        }
 
         public bool Contains(T item) => _currentValue.Contains(item);
 
@@ -74,12 +86,14 @@ namespace Ripple
 
         public int IndexOf(T item) => _currentValue.IndexOf(item);
 
-        public void Insert(int index, T item) => _currentValue.Insert(index, item);
-
-        public void RemoveAt(int index) => _currentValue.RemoveAt(index);
-
         public IEnumerator<T> GetEnumerator() => _currentValue.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _currentValue.GetEnumerator();
+
+        protected override void Restore()
+        {
+            _currentValue.Clear();
+            _currentValue.AddRange(_initialValues);
+        }
     }
 }

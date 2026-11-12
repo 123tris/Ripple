@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Sirenix.OdinInspector;
 
 namespace Ripple
@@ -9,7 +10,7 @@ namespace Ripple
         private static readonly List<LogEntry> logs = new();
 
         public static Action<LogEntry> onLogAdded;
-        
+
         public static List<LogEntry> GetLogs() => new(logs);
 
 #if UNITY_EDITOR
@@ -23,19 +24,14 @@ namespace Ripple
         }
 #endif
 
-        public static void ResetLogs()
-        {
-            logs.Clear();
-        }
+        public static void ResetLogs() => logs.Clear();
 
+        [Conditional("UNITY_EDITOR")]
         public static void Log(string message, UnityEngine.Object context)
         {
-            //Make empty function for a slight optimization, perhaps not worth doing. Or perhaps logger should be placed in the editor?
-#if UNITY_EDITOR
             LogEntry logEntry = new() { message = message, context = context };
             logs.Add(logEntry);
             onLogAdded?.Invoke(logEntry);
-#endif
         }
     }
 

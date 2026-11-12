@@ -13,7 +13,21 @@ namespace Ripple
         [SerializeField, ShowIf(nameof(_isClamped)), HorizontalGroup("clamping")]
         public VariableReference<T> max;
 
-        public override void SetCurrentValue(T value, UnityEngine.Object sender = null)
+        private protected override bool UsesSlider => _isClamped;
+
+        [ShowInInspector, ShowIf(nameof(_isClamped)), PropertyOrder(-1), PropertyRange("@min.Value", "@max.Value")]
+        [LabelText("@UnityEngine.Application.isPlaying ? \"Value\" : \"Initial Value\"")]
+        private T ClampedValue
+        {
+            get => Application.isPlaying ? CurrentValue : InitialValue;
+            set
+            {
+                if (Application.isPlaying) CurrentValue = value;
+                else InitialValue = Clamp(value);
+            }
+        }
+
+        public override void SetCurrentValue(T value, Object sender = null)
         {
             if (_isClamped)
                 value = Clamp(value);
@@ -23,13 +37,7 @@ namespace Ripple
         protected abstract T Clamp(T value);
 
         public abstract void Add(T value);
-        // {
-        //     SetCurrentValue(CurrentValue + (dynamic)value); //Kind of dangerous code as the cast will make the compiler no longer check ahead of time if the operator is actually implemented and thus for certain types can incur a runtime exception
-        // }
 
-        public void Add(NumericalVariable<T> variable)
-        {
-            Add(variable.CurrentValue);
-        }
+        public void Add(NumericalVariable<T> variable) => Add(variable.CurrentValue);
     }
 }

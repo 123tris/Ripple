@@ -19,7 +19,7 @@ namespace Ripple
         public void Invoke(UnityEngine.Object sender = null)
         {
 #if UNITY_EDITOR
-            RecordInvoke(ResolveVoidCaller(sender), sender, null);
+            RecordInvoke(ResolveCaller(sender), sender, null);
 #endif
             gameEvent.Invoke();
         }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
@@ -40,9 +42,13 @@ namespace Ripple
             public string LastValue;
             [HideInTables, HideInInspector] public UnityEngine.Object Sender;
             [HideInTables, HideInInspector] public double LastTimeStamp;
+            [HideInTables, HideInInspector] public string Trace;
 
             [Button("Ping"), ShowIf("@Sender != null"), TableColumnWidth(60, false)]
             private void Ping() => RippleConnections.Ping(Sender);
+
+            [Button("Trace"), ShowIf("@Trace != null"), TableColumnWidth(60, false)]
+            private void LogTrace() => Debug.Log($"{Caller}\n{Trace}", Sender);
         }
 #endif
 
@@ -61,7 +67,7 @@ namespace Ripple
             InvokeRecord rec = Invokers.Find(r => r.Caller == caller && r.Sender == sender);
             if (rec == null)
             {
-                rec = new InvokeRecord { Caller = caller, Sender = sender };
+                rec = new InvokeRecord { Caller = caller, Sender = sender, Trace = disableStackTrace ? null : DescribeStack() };
                 Invokers.Add(rec);
             }
 
@@ -76,10 +82,8 @@ namespace Ripple
             Logger.Log(message, this);
         }
 
-        private protected string ResolveVoidCaller(UnityEngine.Object sender) => ResolveCaller(sender);
-
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private string ResolveCaller(UnityEngine.Object sender)
+        private protected string ResolveCaller(UnityEngine.Object sender)
         {
             if (sender != null) return sender.name;
             if (disableStackTrace) return "(stack trace disabled)";
@@ -93,6 +97,25 @@ namespace Ripple
             }
 
             return "(unknown)";
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static string DescribeStack()
+        {
+            var text = new StringBuilder();
+            string project = Directory.GetCurrentDirectory();
+            foreach (System.Diagnostics.StackFrame frame in new System.Diagnostics.StackTrace(true).GetFrames())
+            {
+                var method = frame.GetMethod();
+                if (method == null || text.Length == 0 && IsPlumbing(method.DeclaringType)) continue;
+                text.Append(method.DeclaringType?.FullName ?? "(global)").Append(':').Append(method.Name).Append(" ()");
+                string file = frame.GetFileName();
+                if (file != null)
+                    text.Append(" (at ").Append(Path.GetRelativePath(project, file).Replace('\\', '/')).Append(':').Append(frame.GetFileLineNumber()).Append(')');
+                text.Append('\n');
+            }
+
+            return text.ToString();
         }
 
         private static bool IsPlumbing(Type type)

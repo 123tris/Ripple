@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using Unity.Properties;
 using UnityEngine;
@@ -10,9 +11,9 @@ namespace Ripple
     [InlineEditor]
     public class VariableSO<T> : BaseVariable<T>, INotifyBindablePropertyChanged
     {
-        [SerializeField, HideInInspector, DontCreateProperty] private protected T _currentValue;
+        [NonSerialized] private protected T _currentValue;
 
-        [SerializeField, HideInPlayMode] private T _initialValue;
+        [SerializeField, HideInPlayMode, HideIf(nameof(UsesSlider))] private T _initialValue;
 
         [SerializeField, Tooltip("Save the value to PlayerPrefs on change and restore it next session. Avoid on per-frame variables, every change writes.")]
         private bool _persist;
@@ -28,7 +29,17 @@ namespace Ripple
 
         private string PersistKey => string.IsNullOrEmpty(_persistKey) ? name : _persistKey;
 
-        [CreateProperty, ShowInInspector, HideInEditorMode, LabelText("Value")]
+        private T StartValue => _persist && TryLoadSavedValue(out T saved) ? saved : _initialValue;
+
+        private protected virtual bool UsesSlider => false;
+
+        private protected T InitialValue
+        {
+            get => _initialValue;
+            set => _initialValue = value;
+        }
+
+        [CreateProperty, ShowInInspector, HideInEditorMode, HideIf(nameof(UsesSlider)), LabelText("Value")]
         public override T CurrentValue
         {
             get => _currentValue;
@@ -52,6 +63,9 @@ namespace Ripple
             OnValueChanged.Invoke(value);
         }
 
+        [Button, BoxGroup("Debug", order: 1), HideInEditorMode, HideInInlineEditors]
+        public override void ResetValue() => SetCurrentValue(StartValue);
+
         public void AddListener(Action<T> method)
         {
             OnValueChanged.AddListener(method);
@@ -64,11 +78,7 @@ namespace Ripple
             RippleConnectionRegistry.RecordUnsubscribe(this, method);
         }
 
-        protected override void ResetValue()
-        {
-            _currentValue = _initialValue;
-            if (_persist && TryLoadSavedValue(out var saved)) _currentValue = saved;
-        }
+        protected override void Restore() => _currentValue = StartValue;
 
         [Serializable] private struct PersistBox { public T Value; }
 
@@ -92,38 +102,55 @@ namespace Ripple
         private void ClearSavedValue()
         {
             PlayerPrefs.DeleteKey(PersistKey);
-            if (!Application.isPlaying) ResetValue();
+            if (!Application.isPlaying) Restore();
         }
     }
 
     public abstract class BaseVariable<T> : BaseVariable
     {
         public abstract T CurrentValue { get; set; }
+    }
+
+    public abstract class BaseVariable : RippleStackTraceSO
+    {
+        private static readonly List<BaseVariable> loaded = new();
+
+        public abstract object Value { get; }
+
+        public static void ResetAll()
+        {
+            foreach (BaseVariable variable in loaded.ToArray())
+                variable.ResetValue();
+        }
+
+        public abstract void ResetValue();
+
+        protected abstract void Restore();
 
         protected virtual void OnEnable()
         {
+            loaded.Add(this);
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 #endif
-            ResetValue();
+            Restore();
+        }
+
+        protected virtual void OnDisable()
+        {
+            loaded.Remove(this);
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+#endif
         }
 
 #if UNITY_EDITOR
         private void OnPlayModeStateChanged(UnityEditor.PlayModeStateChange state)
         {
             if (state != UnityEditor.PlayModeStateChange.ExitingEditMode) return;
-            ResetValue();
+            Restore();
             ClearInvokers();
         }
-
-        private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
 #endif
-
-        protected virtual void ResetValue() { }
-    }
-
-    public abstract class BaseVariable : RippleStackTraceSO
-    {
-        public abstract object Value { get; }
     }
 }
