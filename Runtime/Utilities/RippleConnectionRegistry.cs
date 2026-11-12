@@ -4,14 +4,9 @@ using System.Reflection;
 
 namespace Ripple
 {
-    /// <summary>
-    /// A runtime-captured subscriber for a single event/variable. <see cref="Target"/> is a weak
-    /// reference so the registry never extends a subscriber's lifetime; <see cref="MethodName"/> /
-    /// <see cref="DeclaringType"/> preserve identity even after the target has been collected.
-    /// </summary>
     public readonly struct SubscriberInfo
     {
-        public readonly WeakReference<object> Target; // null for static subscribers
+        public readonly WeakReference<object> Target;
         public readonly string MethodName;
         public readonly string DeclaringType;
 
@@ -23,22 +18,13 @@ namespace Ripple
         }
     }
 
-    /// <summary>
-    /// Editor-only registry of <em>dynamic</em> (runtime <c>+=</c>) subscribers, keyed by the
-    /// event/variable asset they subscribe to. Populated through the <c>AddListener</c>/
-    /// <c>RemoveListener</c> funnels on events and variables. Serialized (UltEvent persistent)
-    /// listeners are not tracked here — they are enumerated separately by editor tooling.
-    ///
-    /// All state and behaviour are compiled only under UNITY_EDITOR; in player builds every method
-    /// is a no-op so the runtime call sites cost nothing.
-    /// </summary>
     public static class RippleConnectionRegistry
     {
 #if UNITY_EDITOR
         private struct Entry
         {
-            public WeakReference<object> Target; // null => static subscriber
-            public MethodInfo Method;            // stored instead of the Delegate so we never pin the target
+            public WeakReference<object> Target;
+            public MethodInfo Method;
         }
 
         private static readonly Dictionary<RippleStackTraceSO, List<Entry>> Map = new();
@@ -57,7 +43,7 @@ namespace Ripple
             if (!Equals(e.Method, method.Method)) return false;
 
             object target = method.Target;
-            if (e.Target == null) return target == null; // both static
+            if (e.Target == null) return target == null;
             return e.Target.TryGetTarget(out var t) && ReferenceEquals(t, target);
         }
 #endif
@@ -72,7 +58,7 @@ namespace Ripple
                 Map[source] = list;
             }
 
-            if (list.Exists(e => SameSubscription(e, method))) return; // avoid duplicates across enable cycles
+            if (list.Exists(e => SameSubscription(e, method))) return;
 
             object target = method.Target;
             list.Add(new Entry
@@ -92,7 +78,6 @@ namespace Ripple
 #endif
         }
 
-        /// <summary>Live subscribers for <paramref name="source"/>. Prunes entries whose target was collected.</summary>
         public static IReadOnlyList<SubscriberInfo> GetSubscribers(RippleStackTraceSO source)
         {
             var result = new List<SubscriberInfo>();

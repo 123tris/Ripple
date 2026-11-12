@@ -1,17 +1,52 @@
 using System;
 using Sirenix.OdinInspector;
-using UltEvents;
 using UnityEngine;
-using UnityEngine.Serialization;
+using UnityEngine.Events;
 
 namespace Ripple
 {
     [InlineEditor]
     public class GameEvent<T> : GameEvent
     {
-        [FormerlySerializedAs("gameEvent")]
-        [SerializeField]
-        private UltEvent<T> response;
+        [SerializeField] private Signal<T> response = new();
+
+        public override bool HasListeners => response.HasListeners;
+
+        internal override UnityEventBase SerializedResponse => response.Response;
+
+        [Button, BoxGroup("Debug")]
+        public virtual void Invoke(T parameter, UnityEngine.Object sender = null)
+        {
+            LogInvoke(parameter, sender);
+            response.Invoke(parameter);
+        }
+
+        public void Invoke(VariableSO<T> parameter) => Invoke(parameter.CurrentValue);
+
+        public void Raise(T parameter) => Invoke(parameter);
+
+        public void AddListener(Action<T> method)
+        {
+            response.AddListener(method);
+            RippleConnectionRegistry.RecordSubscribe(this, method);
+        }
+
+        public void RemoveListener(Action<T> method)
+        {
+            response.RemoveListener(method);
+            RippleConnectionRegistry.RecordUnsubscribe(this, method);
+        }
+
+        protected override void ClearListeners() => response.ClearListeners();
+    }
+
+    public abstract class GameEvent : RippleStackTraceSO
+    {
+        [SerializeField, BoxGroup("Debug")] protected bool clearListenersOnPlaymode;
+
+        public abstract bool HasListeners { get; }
+
+        protected abstract void ClearListeners();
 
         protected void OnEnable()
         {
@@ -29,54 +64,8 @@ namespace Ripple
             if (state != UnityEditor.PlayModeStateChange.ExitingEditMode) return;
             ClearInvokers();
             if (clearListenersOnPlaymode)
-                response.Clear();
+                ClearListeners();
         }
 #endif
-
-        [Button, BoxGroup("Debug")]
-        public virtual void Invoke(T parameter, UnityEngine.Object sender = null)
-        {
-            LogInvoke(parameter, sender);
-            if (response == null) return;
-
-            if (!response.HasCalls)
-                Debug.LogWarning($"Calling event \"{name}\" but no listeners were found", this);
-
-            response.Invoke(parameter);
-        }
-
-        public void Invoke(VariableSO<T> parameter) => Invoke(parameter.CurrentValue);
-
-        public bool HasListeners => response != null && response.HasCalls;
-
-        public void AddListener(Action<T> method)
-        {
-            response += method;
-            RippleConnectionRegistry.RecordSubscribe(this, method);
-        }
-
-        public void RemoveListener(Action<T> method)
-        {
-            response -= method;
-            RippleConnectionRegistry.RecordUnsubscribe(this, method);
-        }
-
-        public override void AddGenericListener(Delegate method)
-        {
-            response.AddPersistentCall(method);
-        }
-
-        public override void RemoveGenericListener(Delegate method)
-        {
-            response.RemovePersistentCall(method);
-        }
-    }
-
-    public abstract class GameEvent : RippleStackTraceSO
-    {
-        public abstract void AddGenericListener(Delegate method);
-
-        public abstract void RemoveGenericListener(Delegate method);
-        [SerializeField, BoxGroup("Debug")] protected bool clearListenersOnPlaymode;
     }
 }

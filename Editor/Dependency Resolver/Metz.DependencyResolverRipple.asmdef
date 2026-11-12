@@ -11,12 +11,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.kybernetik.ultevents",
-            "expression": "0",
-            "define": "ULTEVENTS"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }

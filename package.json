@@ -1,9 +1,9 @@
 {
   "name": "com.metz.ripple",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "displayName": "Ripple",
   "description": "Lazy ScriptableObject framework",
-  "unity": "2022.1",
+  "unity": "6000.6",
   "keywords": [
     "tools",
     "extensions",

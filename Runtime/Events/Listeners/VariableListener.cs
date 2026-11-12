@@ -1,34 +1,22 @@
 using System;
 using Sirenix.OdinInspector;
-using UltEvents;
 using UnityEngine;
 
 namespace Ripple
 {
     public class VariableListener<T> : MonoBehaviour, IRippleListener
     {
-        [SerializeField, HideReferenceObjectPicker] private VariableSO<T> variable;
+        [SerializeField, Required, HideReferenceObjectPicker] private VariableSO<T> variable;
 
-        [SerializeField] UltEvent<T> onValueChanged;
+        [SerializeField] private Signal<T> onValueChanged = new();
 
         public RippleStackTraceSO Target => variable;
         public Type ResponseValueType => typeof(T);
 
-        void OnEnable()
-        {
-            if (variable != null)
-                variable.AddListener(OnValueChanged);
-        }
+        private void OnEnable() => variable.AddListener(OnValueChanged);
 
-        private void OnValueChanged(T v)
-        {
-            onValueChanged?.Invoke(v);
-        }
+        private void OnDisable() => variable.RemoveListener(OnValueChanged);
 
-        void OnDisable()
-        {
-            if (variable != null)
-                variable.RemoveListener(OnValueChanged);
-        }
+        private void OnValueChanged(T value) => onValueChanged.Invoke(value);
     }
 }

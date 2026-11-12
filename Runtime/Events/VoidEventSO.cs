@@ -1,35 +1,19 @@
 using System;
 using Sirenix.OdinInspector;
-using UltEvents;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Ripple
 {
     [RippleData]
-    [CreateAssetMenu(menuName = "Events/Void")]
+    [CreateAssetMenu(menuName = Config.EventMenu + "Void")]
     public class VoidEventSO : GameEvent
     {
-        [SerializeField] private UltEvent gameEvent;
+        [SerializeField] private Signal gameEvent = new();
 
-        protected void OnEnable()
-        {
-            hideFlags = HideFlags.DontUnloadUnusedAsset;
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-#endif
-        }
+        public override bool HasListeners => gameEvent.HasListeners;
 
-#if UNITY_EDITOR
-        private void OnDisable() => UnityEditor.EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-
-        private void OnPlayModeStateChanged(UnityEditor.PlayModeStateChange state)
-        {
-            if (state != UnityEditor.PlayModeStateChange.ExitingEditMode) return;
-            ClearInvokers();
-            if (clearListenersOnPlaymode)
-                gameEvent.Clear();
-        }
-#endif
+        internal override UnityEventBase SerializedResponse => gameEvent.Response;
 
         [Button]
         public void Invoke(UnityEngine.Object sender = null)
@@ -37,31 +21,23 @@ namespace Ripple
 #if UNITY_EDITOR
             RecordInvoke(ResolveVoidCaller(sender), sender, null);
 #endif
-            gameEvent?.Invoke();
+            gameEvent.Invoke();
         }
 
-        public bool HasListeners => gameEvent != null && gameEvent.HasCalls;
+        public void Raise() => Invoke();
 
         public void AddListener(Action method)
         {
-            gameEvent += method;
+            gameEvent.AddListener(method);
             RippleConnectionRegistry.RecordSubscribe(this, method);
         }
 
         public void RemoveListener(Action method)
         {
-            gameEvent -= method;
+            gameEvent.RemoveListener(method);
             RippleConnectionRegistry.RecordUnsubscribe(this, method);
         }
 
-        public override void AddGenericListener(Delegate method)
-        {
-            gameEvent.AddPersistentCall(method);
-        }
-
-        public override void RemoveGenericListener(Delegate method)
-        {
-            gameEvent.RemovePersistentCall(method);
-        }
+        protected override void ClearListeners() => gameEvent.ClearListeners();
     }
 }
