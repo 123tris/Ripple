@@ -13,6 +13,8 @@ namespace Ripple
         public RippleStackTraceSO Target => variable;
         public Type ResponseValueType => typeof(T);
 
+        private void Awake() => variable = variable.For(this);
+
         private void OnEnable() => variable.AddListener(OnValueChanged);
 
         private void OnDisable() => variable.RemoveListener(OnValueChanged);

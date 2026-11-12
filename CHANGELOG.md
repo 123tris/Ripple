@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0 (branch `feature/0.3.0`, not released)
+
+- String and Color are built in: variable, reference, event, list and both listeners.
+- `LocalVariables` component and `variable.For(this)` give each object its own copy of a variable. Variable listeners below the component use the copy without any code.
+- `OnItemAdded` and `OnItemRemoved` on lists are `Signal<T>`: a list change can call a `UnityEvent` and raise events from the inspector. `+=` and `-=` keep working.
+- Dropping an event or variable asset on a GameObject, in the Hierarchy or on its inspector, adds the matching listener with the asset assigned.
+- `Tools > Ripple > Debugger` replaces the Event Logger and the Wizard: the asset tree and the session log in one window, one search field for both.
+- The value is the first field of a variable in edit and play mode.
+
+### Breaking
+
+- `OnItemAdded` and `OnItemRemoved` are no longer `Action<T>`. Assigning them or calling `?.Invoke` no longer compiles; subscribe with `+=`.
+- `EventLoggerWindow` and `RippleWizard` are removed, with their menu items.
+
 ## 0.2.0
 
 ### Events

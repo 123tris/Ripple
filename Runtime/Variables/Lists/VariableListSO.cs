@@ -16,8 +16,8 @@ namespace Ripple
         [NonSerialized, ShowInInspector, HideInEditorMode, LabelText("Values")]
         private List<T> _currentValue = new();
 
-        public Action<T> OnItemAdded;
-        public Action<T> OnItemRemoved;
+        [HideInInlineEditors] public Signal<T> OnItemAdded = new();
+        [HideInInlineEditors] public Signal<T> OnItemRemoved = new();
 
         public List<T> CurrentValues => _currentValue;
 
@@ -36,7 +36,7 @@ namespace Ripple
         public void Add(T item)
         {
             _currentValue.Add(item);
-            OnItemAdded?.Invoke(item);
+            OnItemAdded.Invoke(item);
         }
 
         public void AddRange(IEnumerable<T> items)
@@ -48,13 +48,13 @@ namespace Ripple
         public void Insert(int index, T item)
         {
             _currentValue.Insert(index, item);
-            OnItemAdded?.Invoke(item);
+            OnItemAdded.Invoke(item);
         }
 
         public bool Remove(T item)
         {
             if (!_currentValue.Remove(item)) return false;
-            OnItemRemoved?.Invoke(item);
+            OnItemRemoved.Invoke(item);
             return true;
         }
 
@@ -62,7 +62,7 @@ namespace Ripple
         {
             T item = _currentValue[index];
             _currentValue.RemoveAt(index);
-            OnItemRemoved?.Invoke(item);
+            OnItemRemoved.Invoke(item);
         }
 
         public void Resize(int count)

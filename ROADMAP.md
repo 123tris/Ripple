@@ -8,7 +8,7 @@ Rules for any change:
 
 - **One way to do a thing.** One event type (`Signal`), one variable base, one listener per kind. A second mechanism for the same job is removed, not kept for compatibility.
 - **Use Unity before writing anything.** `UnityEvent`, `TypeCache`, UI Toolkit bindings, the console's stack trace links.
-- **Small enough to read in one sitting.** The package is about 2,000 lines. A feature that needs its own subsystem (dispatcher, sink, registry of registries) is the wrong shape.
+- **Small enough to read in one sitting.** The package is about 2,100 lines. A feature that needs its own subsystem (dispatcher, sink, registry of registries) is the wrong shape.
 - **A feature lands when a real project needed it**, and in the smallest form that solves that project's problem.
 - **No comments.** Names carry the meaning. Reasons go in the changelog.
 
@@ -17,6 +17,7 @@ Rules for any change:
 | Ref | What it is |
 | --- | --- |
 | `main` | The current line. Every release is a tag on it: `v0.2.0` is the latest. |
+| `feature/0.3.0` | 0.3.0, built and tested, waiting for the release steps below. |
 | `v0.1.4` | The last release on UltEvents. Older projects pin it, or the exact commit they were built on. |
 | `feature/abstraction+runtime-registry` | Fully contained in `main`. Kept only because JamKit `main` and the GMTK 2026 project still pin it. Delete once neither does. |
 | `archive/*` tags | The retired experiments below. Restore one with `git switch -c <name> archive/<name>`. |
@@ -30,10 +31,10 @@ Every branch below was an attempt at a real need. The need is kept where it hold
 | Branch | Idea | Verdict |
 | --- | --- | --- |
 | `random-variables` | A reference that returns a random value in a range | Dropped from Ripple. A reference is "constant or variable"; a third mode makes every reference field wider. If a jam needs it, it is a small struct in JamKit. |
-| `feature/variable-declaration` | Per-object variables: a declaration asset plus an instancer component holding a value per GameObject | **Need kept**, see "Per-instance variables" below. The implementation stored untyped `object` values in a dictionary. |
+| `feature/variable-declaration` | Per-object variables: a declaration asset plus an instancer component holding a value per GameObject | **Need kept** as `LocalVariables` in 0.3.0. The implementation stored untyped `object` values in a dictionary. |
 | `feature/command-system` | `[SerializeReference]` command lists with conditions, run from an asset | Dropped. A `Signal` already runs a list of actions from the inspector, and branching belongs in code. |
-| `feature/refactor-v1` | Color, String and Quaternion types; event groups; settings provider; factory; `Unit`; reference-usage search; richer logger; tests | Types: covered by the Type Generator, with String and Color to ship built in. Event groups: covered by a Signal's raise list. Usage search: covered by `Scan Listeners`. Tests: kept as an idea, `Tests/` now exists. The rest dropped. |
-| `v2-redesign` (and the unpushed "v3 overhaul" commit) | Ground-up rewrite: channels and a dispatcher, generated code for every built-in type, diagnostics sinks, traits and validators, snapshots, per-frame coalescing, instancers, a debugger window, a project validator | Dropped as a whole. It is 6,000 lines against 2,000 to deliver the same variables and events. Three ideas survive in smaller form: instancers (below), one debug window (below), and drag-an-asset-onto-an-object to create its listener (below). |
+| `feature/refactor-v1` | Color, String and Quaternion types; event groups; settings provider; factory; `Unit`; reference-usage search; richer logger; tests | Types: covered by the Type Generator, with String and Color built in since 0.3.0. Event groups: covered by a Signal's raise list. Usage search: covered by `Scan Listeners`. Tests: kept as an idea, `Tests/` now exists. The rest dropped. |
+| `v2-redesign` (and the unpushed "v3 overhaul" commit) | Ground-up rewrite: channels and a dispatcher, generated code for every built-in type, diagnostics sinks, traits and validators, snapshots, per-frame coalescing, instancers, a debugger window, a project validator | Dropped as a whole. It is 6,000 lines against 2,000 to deliver the same variables and events. Three ideas survive in smaller form, all in 0.3.0: instancers as `LocalVariables`, one debugger window, and drag-an-asset-onto-an-object to create its listener. |
 | `feature/abstraction+runtime-registry` | Listener scan, runtime subscriber registry, PlayerPrefs persistence, draggable reference label | Merged. All of it is in 0.2.0. |
 
 ## What AVR Japan needed
@@ -73,13 +74,32 @@ Moving an AVR project to 0.2.0 also means re-wiring UltEvent responses on its ev
 - Delete `feature/abstraction+runtime-registry` once JamKit `main` and the GMTK 2026 project pin a tag instead.
 - An AVR project moves to 0.2.0 when the UltEvent re-wiring is scheduled, not before.
 
-### 0.3.0 candidates, in order
+### 0.3.0 release
 
-- **String and Color built in.** Generate them with the Type Generator and commit the result. They are the two types every project adds first.
-- **Per-instance variables.** The need behind `variable-declaration` and the v2 instancers: ten enemies cannot share one `Health` asset. Smallest form: a component that clones the variable assets it lists at `Awake` (`Instantiate(asset)`), and sibling components read the clone through it. No declaration assets, no untyped storage. Design it against JamKit's `Health` before writing it.
-- **Signals on lists.** `OnItemAdded` and `OnItemRemoved` as `Signal<T>` so a list change can raise an event from the inspector, as a variable change already can.
-- **Drag to listen.** Dropping an event or variable asset on a GameObject adds the matching listener component with the asset assigned.
-- **One debug window.** Fold the Event Logger and the wizard into a single window with a filter field, instead of growing either.
+Everything below is on `feature/0.3.0`. Its tests pass in Unity 6000.0.26f1 and 6000.3.17f1.
+
+| Candidate | What shipped |
+| --- | --- |
+| String and Color built in | Variable, reference, event, list and listeners for both. |
+| Per-instance variables | `LocalVariables` component. It copies the variables it lists the first time something asks, so script order does not matter. `variable.For(this)` returns the copy, or the shared asset when there is none. `VariableListener` calls it in `Awake`. |
+| Signals on lists | `OnItemAdded` and `OnItemRemoved` are `Signal<T>`. |
+| Drag to listen | A drop handler for the Hierarchy and the inspector. Uses the `EntityId` handlers from Unity 6000.3 on, the older ones below. |
+| One debug window | `Tools > Ripple > Debugger`. The Event Logger and the Wizard are removed. |
+
+To release:
+
+1. Drag an event asset onto a GameObject in the editor once. The handler was run from a script with every asset type, but not with a real mouse drag.
+2. Merge `feature/0.3.0` into `main`, tag `v0.3.0`, delete the branch.
+3. In JamKit, pin `v0.3.0` and let `Health` resolve its variable with `CurrentVariable.For(this)`, so the "leave empty when several objects share this prefab" caveat goes away.
+
+### After 0.3.0
+
+Nothing here is scheduled. Each item is a gap seen while building 0.3.0 and waits for a project that hits it.
+
+- **References and local variables.** A `FloatReference` that points at a variable reads the shared asset, also below a `LocalVariables` component. Smallest form: `reference.For(this)`.
+- **Vector2 has an event and a variable listener but no variable.** Add `Vector2VariableSO` or remove `VariableListenerVector2`.
+- **Lists in the debug tools.** A list does not fill `Invoked by`, and `Scan Listeners` does not read the responses wired on its two Signals.
+- **Odin visibility attributes.** Odin applies the last visibility attribute on a member, so two of them on one member silently cancel. Keep one condition per member.
 
 ### Not doing
 

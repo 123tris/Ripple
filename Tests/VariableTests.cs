@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace Ripple.Tests
@@ -106,6 +107,57 @@ namespace Ripple.Tests
 
             CollectionAssert.AreEqual(new[] { 1, 2, 9 }, added);
             CollectionAssert.AreEquivalent(new[] { 9, 1, 2 }, removed);
+        }
+
+        [Test]
+        public void LocalVariables_GiveEachObjectItsOwnCopy()
+        {
+            var health = Create<FloatVariableSO>();
+            Transform first = CreateWithLocal(health);
+            Transform second = CreateWithLocal(health);
+            Transform shared = CreateChild(null);
+
+            FloatVariableSO firstHealth = health.For(first);
+            FloatVariableSO secondHealth = health.For(second);
+            created.Add(firstHealth);
+            created.Add(secondHealth);
+            firstHealth.CurrentValue = 3f;
+
+            Assert.AreEqual(3f, firstHealth.CurrentValue);
+            Assert.AreEqual(0f, secondHealth.CurrentValue);
+            Assert.AreEqual(0f, health.CurrentValue);
+            Assert.AreSame(firstHealth, health.For(first));
+            Assert.AreSame(health, health.For(shared));
+        }
+
+        [Test]
+        public void LocalVariables_LeaveUnlistedVariablesShared()
+        {
+            var health = Create<FloatVariableSO>();
+            var score = Create<IntVariableSO>();
+            Transform child = CreateWithLocal(health);
+
+            Assert.AreSame(score, score.For(child));
+        }
+
+        private Transform CreateWithLocal(BaseVariable variable)
+        {
+            var root = new GameObject("Root", typeof(LocalVariables));
+            created.Add(root);
+            var serialized = new SerializedObject(root.GetComponent<LocalVariables>());
+            SerializedProperty variables = serialized.FindProperty("variables");
+            variables.arraySize = 1;
+            variables.GetArrayElementAtIndex(0).objectReferenceValue = variable;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return CreateChild(root.transform);
+        }
+
+        private Transform CreateChild(Transform parent)
+        {
+            var child = new GameObject("Child");
+            created.Add(child);
+            child.transform.SetParent(parent);
+            return child.transform;
         }
 
         [Test]

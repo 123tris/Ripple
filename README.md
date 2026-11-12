@@ -14,6 +14,7 @@ Add to `Packages/manifest.json`:
 
 | Ref | Version | Notes |
 | --- | --- | --- |
+| `feature/0.3.0` | 0.3.0 | Not released yet. Local variables, String and Color, drag to listen, one debugger window. |
 | `v0.2.0` | 0.2.0 | Current release. Signal instead of UltEvents. Unity 6000.0 or newer. |
 | `v0.1.4` | 0.1.4 | Last UltEvents release. Unity 2022.1 or newer. |
 
@@ -36,6 +37,7 @@ health.ResetValue();
 - `Is Clamped` on numeric variables keeps the value between `min` and `max` and turns the inspector field into a slider.
 - `BaseVariable.ResetAll()` puts every loaded variable and list back to its starting value, for restarting a session without reloading.
 - A variable is a UI Toolkit data source: bind to `CurrentValue` from UXML.
+- Bool, Int, Float, String, Color, Vector3 and GameObject are built in.
 
 **References** let a field be either a constant or a variable asset, chosen in the inspector.
 
@@ -55,9 +57,9 @@ gameOver.Raise();
 damaged.Invoke(12f, this);
 ```
 
-`EventListener` and `VariableListener` components respond to them in a scene.
+`EventListener` and `VariableListener` components respond to them in a scene. Drop an event or variable asset on a GameObject in the Hierarchy, or on its inspector, to add the matching listener with the asset assigned.
 
-**Lists** are variables that hold a list, with `OnItemAdded` and `OnItemRemoved`. A list with no initial values is a runtime set: objects join it with a `RuntimeSetMember` component and leave when disabled.
+**Lists** are variables that hold a list, with `OnItemAdded` and `OnItemRemoved` Signals. A list with no initial values is a runtime set: objects join it with a `RuntimeSetMember` component and leave when disabled.
 
 **Signal** is the event type used everywhere above, and the one to use for events on your own components. In the inspector it is a `UnityEvent` plus a list of Ripple events to raise. In code it takes listeners.
 
@@ -67,6 +69,18 @@ public Signal<float> OnDamaged = new();
 OnDamaged.Invoke(amount);
 health.OnDamaged += amount => Debug.Log(amount);
 ```
+
+## One value per object
+
+Ten enemies cannot share one `Health` asset. Add a **Local Variables** component to the root of the prefab and list the variable: that object and its children get their own copy at runtime. Every `VariableListener` below it listens to the copy. Code asks for it once:
+
+```csharp
+[SerializeField] private FloatVariableSO health;
+
+private void Awake() => health = health.For(this);
+```
+
+A variable that is not listed, or an object without the component, keeps using the shared asset.
 
 ## Your own types
 
@@ -80,4 +94,4 @@ Every variable and event asset has a Debug box in its inspector:
 - **Scan Listeners** lists everything listening, in scenes, prefabs and code.
 - Pass yourself as the sender (`variable.SetCurrentValue(value, this)`, `gameEvent.Invoke(value, this)`) to have the object named instead of the calling method.
 
-`Tools > Ripple > Event Logger` shows every change and raise of the session, newest first. `Tools > Ripple > Wizard` browses all Ripple assets in the project.
+`Tools > Ripple > Debugger` puts every Ripple asset in the project next to the session log: each change and raise, newest first. The search field filters both, and clicking a log entry opens its asset.

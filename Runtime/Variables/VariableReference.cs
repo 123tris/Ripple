@@ -69,4 +69,20 @@ namespace Ripple
         public Vector3Reference() { }
     }
     [Serializable] public class GameObjectReference : VariableReference<GameObject> { }
+
+    [Serializable]
+    public class StringReference : VariableReference<string>
+    {
+        public StringReference(string value) : base(value) { }
+
+        public StringReference() { }
+    }
+
+    [Serializable]
+    public class ColorReference : VariableReference<Color>
+    {
+        public ColorReference(Color value) : base(value) { }
+
+        public ColorReference() { }
+    }
 }
