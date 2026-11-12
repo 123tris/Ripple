@@ -14,7 +14,7 @@ Add to `Packages/manifest.json`:
 
 | Ref | Version | Notes |
 | --- | --- | --- |
-| `feature/jamkit` | 0.2.0 | Current work. Signal instead of UltEvents. |
+| `feature/jamkit` | 0.2.0 | Current work. Signal instead of UltEvents. Unity 6000.0 or newer. |
 | `v0.1.4` (`main`) | 0.1.4 | Last UltEvents release. Unity 2022.1 or newer. |
 
 ## The pieces

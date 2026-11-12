@@ -40,6 +40,7 @@
 
 ### Breaking
 
+- Requires Unity 6000.0 or newer (0.1.4 required 2022.1).
 - UltEvent responses on existing event and listener assets do not convert. Re-wire them on the `UnityEvent`.
 - `VariableListSO` serializes `_initialValues` (migrated from `_currentValue`). The `_runtimeSet` field is removed.
 

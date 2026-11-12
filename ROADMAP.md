@@ -55,9 +55,10 @@ Pull request 3 (`XRJapan:main` into `main`, "Sync hotfixes") is 22 commits of fi
 | Tools were scattered at the top of the Tools menu | `Tools/Ripple/` | Same. |
 | `GameObjectVariableSO` missing from the wizard | `[RippleData]` added | Added, and on the four event types that also lacked it. |
 
-Two things the pull request points at that are **not** solved:
+Ripple's Unity floor is 6000.0, below the AVR projects (6000.1 and 6000.3). JamKit requires 6000.6 on its own; Ripple does not follow it. Keep Ripple free of APIs newer than its floor, and compile it against a 6000.0 editor before raising it.
 
-- **Unity version.** 0.2.0 declares Unity 6000.6. The AVR projects are on 6000.1 and 6000.3. Ripple's code needs nothing newer than 6000.0, so the floor can be lowered in `package.json` without touching code.
+One thing the pull request points at is **not** solved:
+
 - **Odin as a hard dependency.** The pull request leaves TODOs to move Odin attributes out of the runtime. Not planned. It becomes worth doing only if a project cannot have Odin.
 
 Moving an AVR project to 0.2.0 also means re-wiring UltEvent responses on its event and listener assets, because UltEvent data does not convert to `UnityEvent`. That is the real cost of the upgrade and should be scheduled, not slipped into a hotfix.
@@ -66,7 +67,7 @@ Moving an AVR project to 0.2.0 also means re-wiring UltEvent responses on its ev
 
 ### 0.2.0 release
 
-1. Open the host project in an editor that satisfies the package floor and run the `Metz.Ripple.Tests` assembly. Nothing in 0.2.0 has run inside Unity yet; it is compile-checked only.
+1. Open a project on Unity 6000.0 or newer and run the `Metz.Ripple.Tests` assembly. Nothing in 0.2.0 has run inside Unity yet; it is compile-checked only.
 2. Look at three inspectors by eye: a `Signal` field, a clamped `FloatVariableSO` (slider), and the `Invoked by` table with its `Trace` button.
 3. Merge `feature/jamkit` into `main`, tag `v0.2.0`, point JamKit at the tag.
 4. Projects that install Ripple with no branch follow `main` and will pick up 0.2.0 on their next package update. Pin them to `#v0.1.4` first if they should stay on UltEvents.
