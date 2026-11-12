@@ -24,11 +24,11 @@ namespace Ripple
         [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors, LabelText("Scan prefabs too")]
         private bool _scanPrefabs = true;
 
-        [ShowInInspector, TableList(IsReadOnly = true, AlwaysExpanded = true), ShowIf("@Invokers.Count > 0"),
+        [ShowInInspector, TableList(IsReadOnly = true, AlwaysExpanded = true),
          LabelText("Invoked by"), BoxGroup("Debug", order: 1), HideInInlineEditors]
         protected readonly List<InvokeRecord> Invokers = new();
 
-        [ShowInInspector, TableList(IsReadOnly = true, AlwaysExpanded = true), ShowIf("@_listeners.Count > 0"),
+        [ShowInInspector, TableList(IsReadOnly = true, AlwaysExpanded = true),
          LabelText("Listeners"), BoxGroup("Debug", order: 1), HideInInlineEditors]
         private readonly List<RippleConnections.ListenerRow> _listeners = new();
 

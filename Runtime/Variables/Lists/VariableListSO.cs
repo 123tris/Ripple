@@ -73,7 +73,7 @@ namespace Ripple
 
         public void Clear() => Resize(0);
 
-        [Button, BoxGroup("Debug", order: 1), HideInEditorMode, HideInInlineEditors]
+        [Button, BoxGroup("Debug", order: 1), HideInInlineEditors]
         public override void ResetValue()
         {
             Clear();

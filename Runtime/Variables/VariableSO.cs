@@ -13,7 +13,7 @@ namespace Ripple
     {
         [NonSerialized] private protected T _currentValue;
 
-        [SerializeField, HideInPlayMode, HideIf(nameof(UsesSlider))] private T _initialValue;
+        [SerializeField, HideIf("@UnityEngine.Application.isPlaying || UsesSlider")] private T _initialValue;
 
         [SerializeField, Tooltip("Save the value to PlayerPrefs on change and restore it next session. Avoid on per-frame variables, every change writes.")]
         private bool _persist;
@@ -39,7 +39,7 @@ namespace Ripple
             set => _initialValue = value;
         }
 
-        [CreateProperty, ShowInInspector, HideInEditorMode, HideIf(nameof(UsesSlider)), LabelText("Value")]
+        [CreateProperty, ShowInInspector, ShowIf("@UnityEngine.Application.isPlaying && !UsesSlider"), LabelText("Value")]
         public override T CurrentValue
         {
             get => _currentValue;
@@ -63,7 +63,7 @@ namespace Ripple
             OnValueChanged.Invoke(value);
         }
 
-        [Button, BoxGroup("Debug", order: 1), HideInEditorMode, HideInInlineEditors]
+        [Button, BoxGroup("Debug", order: 1), HideInInlineEditors]
         public override void ResetValue() => SetCurrentValue(StartValue);
 
         public void AddListener(Action<T> method)
