@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:Style src="Ripple.uss" />
+    <ui:VisualElement class="ripple-generator">
+        <uie:ToolbarSearchField name="search" placeholder-text="Type to generate for, for example Quaternion" />
+        <ui:ListView name="matches" class="ripple-types" show-border="true" fixed-item-height="18" />
+        <ui:VisualElement class="ripple-row">
+            <uie:PropertyField binding-path="folder" class="ripple-grow" />
+            <ui:Button name="browse" text="Browse" />
+        </ui:VisualElement>
+        <uie:PropertyField binding-path="namespace" />
+        <uie:PropertyField binding-path="parts" label="Generate" />
+        <ui:Button name="generate" text="Generate" class="ripple-generate" />
+    </ui:VisualElement>
+</ui:UXML>

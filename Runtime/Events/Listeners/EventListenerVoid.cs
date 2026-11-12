@@ -1,5 +1,4 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Ripple
@@ -7,7 +6,7 @@ namespace Ripple
     [AddComponentMenu(Config.EventListenerMenu + "Event Listener Void")]
     public class EventListenerVoid : MonoBehaviour, IRippleListener
     {
-        [SerializeField, Required] private VoidEventSO _event;
+        [SerializeField] private VoidEventSO _event;
 
         [SerializeField] private Signal _response = new();
 

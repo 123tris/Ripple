@@ -1,12 +1,11 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Ripple
 {
     public class EventListener<T> : MonoBehaviour, IRippleListener
     {
-        [SerializeField, Required] private GameEvent<T> _event;
+        [SerializeField] private GameEvent<T> _event;
 
         [SerializeField] private Signal<T> _response = new();
 

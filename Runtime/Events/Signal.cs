@@ -1,14 +1,13 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Ripple
 {
-    [Serializable, InlineProperty, HideLabel]
+    [Serializable]
     public class Signal
     {
-        [SerializeField, LabelText("@$property.Parent.NiceName")]
+        [SerializeField]
         private UnityEvent response = new();
 
         [SerializeField, Tooltip("Ripple events raised alongside the response.")]
@@ -47,10 +46,10 @@ namespace Ripple
         }
     }
 
-    [Serializable, InlineProperty, HideLabel]
+    [Serializable]
     public class Signal<T>
     {
-        [SerializeField, LabelText("@$property.Parent.NiceName")]
+        [SerializeField]
         private UnityEvent<T> response = new();
 
         [SerializeField, Tooltip("Ripple events raised with the same value alongside the response.")]

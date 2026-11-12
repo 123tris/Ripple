@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:Template name="Debug" src="Debug.uxml" />
+    <ui:Style src="Ripple.uss" />
+    <ui:VisualElement>
+        <ui:TextField binding-path="_developerNotes" multiline="true" placeholder-text="Notes" class="ripple-notes" />
+        <uie:PropertyField name="initial" binding-path="_initialValues" />
+        <ui:VisualElement name="live">
+            <ui:VisualElement class="ripple-row">
+                <ui:Label text="Values" class="ripple-grow ripple-heading" />
+                <ui:Button name="reset" text="Reset" tooltip="Set the list back to its initial values." />
+            </ui:VisualElement>
+            <ui:ListView name="values" class="ripple-table" show-border="true" fixed-item-height="20" />
+        </ui:VisualElement>
+        <uie:PropertyField binding-path="OnItemAdded" />
+        <uie:PropertyField binding-path="OnItemRemoved" />
+        <ui:Instance template="Debug" />
+    </ui:VisualElement>
+</ui:UXML>

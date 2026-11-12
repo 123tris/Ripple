@@ -2,7 +2,7 @@
 
 ScriptableObject variables and events for Unity, after Ryan Hipple's "Game Architecture with Scriptable Objects". State and events are assets, so systems meet in the inspector instead of referencing each other.
 
-Requires Odin Inspector. See [ROADMAP.md](ROADMAP.md) for where the package is going and [CHANGELOG.md](CHANGELOG.md) for what changed.
+No dependencies: the inspectors are UI Toolkit, and the package works the same with or without Odin Inspector. See [ROADMAP.md](ROADMAP.md) for where the package is going and [CHANGELOG.md](CHANGELOG.md) for what changed.
 
 ## Install
 
@@ -14,7 +14,7 @@ Add to `Packages/manifest.json`:
 
 | Ref | Version | Notes |
 | --- | --- | --- |
-| `feature/0.3.0` | 0.3.0 | Not released yet. Local variables, String and Color, drag to listen, one debugger window. |
+| `feature/0.3.0` | 0.3.0 | Not released yet. UI Toolkit editor, no Odin requirement, local variables, String and Color, drag to listen. |
 | `v0.2.0` | 0.2.0 | Current release. Signal instead of UltEvents. Unity 6000.0 or newer. |
 | `v0.1.4` | 0.1.4 | Last UltEvents release. Unity 2022.1 or newer. |
 
@@ -34,12 +34,13 @@ health.ResetValue();
 
 - The asset stores the initial value. The current value lives only in memory, so playing never changes the asset.
 - `Persist` saves the value to PlayerPrefs and restores it next session.
-- `Is Clamped` on numeric variables keeps the value between `min` and `max` and turns the inspector field into a slider.
+- `Clamp` on numeric variables keeps the value between `Min` and `Max` and turns the inspector field into a slider.
+- In play mode the inspector shows the live value. Editing it there changes the variable and notifies its listeners.
 - `BaseVariable.ResetAll()` puts every loaded variable and list back to its starting value, for restarting a session without reloading.
 - A variable is a UI Toolkit data source: bind to `CurrentValue` from UXML.
 - Bool, Int, Float, String, Color, Vector3 and GameObject are built in.
 
-**References** let a field be either a constant or a variable asset, chosen in the inspector.
+**References** let a field be either a constant or a variable asset, chosen from the menu at the end of the field.
 
 ```csharp
 [SerializeField] private FloatReference speed = new(5f);
@@ -84,14 +85,19 @@ A variable that is not listed, or an object without the component, keeps using t
 
 ## Your own types
 
-`Tools > Ripple > Type Generator` writes the variable, reference, event, list and listener classes for any type, one folder per type.
+`Tools > Ripple > Type Generator` writes the variable, reference, event, list and listener classes for any type, one folder per type. Search for the type by name, pick it from the list, and generate.
 
 ## Debugging
 
-Every variable and event asset has a Debug box in its inspector:
+Every variable, list and event asset has a Debug foldout in its inspector:
 
-- **Invoked by** lists who changed or raised it, how often, and the last value. `Ping` selects the sender, `Trace` logs the full call stack with clickable file links.
-- **Scan Listeners** lists everything listening, in scenes, prefabs and code.
-- Pass yourself as the sender (`variable.SetCurrentValue(value, this)`, `gameEvent.Invoke(value, this)`) to have the object named instead of the calling method.
+- **Raised By** lists who changed or raised it, how often, when, and the last value. Select a row to see the call stack captured for that caller. Click a line of the stack to open the file at that line.
+- **Listeners** lists what is listening: responses wired on the asset, code that subscribed, and listener components in the open scenes. `Include Prefabs` also searches every prefab.
+- Pass yourself as the sender (`variable.SetCurrentValue(value, this)`, `gameEvent.Invoke(value, this)`) to have the object named instead of the calling method. Selecting its row pings it.
+- An event has a `Raise` button, with a field for the value when it takes one. It is enabled in play mode.
 
-`Tools > Ripple > Debugger` puts every Ripple asset in the project next to the session log: each change and raise, newest first. The search field filters both, and clicking a log entry opens its asset.
+`Tools > Ripple > Debugger` lists every Ripple asset in the project. Select **Log** at the top for every change and raise of the session, newest first, or select an asset for its inspector. The search field filters both by asset name, and double-clicking a log row opens its asset.
+
+## Editing the editor
+
+Each inspector and window is a UXML document next to its script in `Editor/`, assigned to the script as a default reference, and all of them share `Editor/Ripple.uss`. Open one in UI Builder to rearrange it. Fields are placed by `binding-path`, so moving one needs no code; the elements the scripts look up are found by `name`, so keep those.

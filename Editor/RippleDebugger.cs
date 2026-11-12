@@ -2,122 +2,135 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities.Editor;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Ripple
 {
-    public class RippleDebugger : OdinMenuEditorWindow
+    public class RippleDebugger : EditorWindow
     {
-        private static string[] assetGuids;
+        private const string Log = "Log";
 
-        private GUIStyle messageStyle;
+        [SerializeField] private VisualTreeAsset layout;
 
-        private bool ShowsLog => MenuTree.Selection.SelectedValue == null;
+        private readonly List<LogEntry> shown = new();
+        private readonly Dictionary<string, int> ids = new();
+        private MultiColumnListView log;
+        private TreeView assets;
+        private ScrollView inspector;
+        private string filter = "";
+        private int logged = -1;
 
         [MenuItem("Tools/Ripple/Debugger")]
-        private static void OpenWindow() => GetWindow<RippleDebugger>("Ripple Debugger");
+        private static void Open() => GetWindow<RippleDebugger>("Ripple Debugger").minSize = new Vector2(480, 200);
 
-        protected override void OnEnable()
+        private void OnEnable() => EditorApplication.projectChanged += ShowAssets;
+
+        private void OnDisable() => EditorApplication.projectChanged -= ShowAssets;
+
+        private void CreateGUI()
         {
-            base.OnEnable();
-            Logger.onLogAdded += OnLogAdded;
-        }
+            VisualElement root = rootVisualElement;
+            RippleStyle.Restore(this, ref layout);
+            layout.CloneTree(root);
 
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-            Logger.onLogAdded -= OnLogAdded;
-        }
-
-        private void OnLogAdded(LogEntry entry) => Repaint();
-
-        protected override OdinMenuTree BuildMenuTree()
-        {
-            var tree = new OdinMenuTree { DefaultMenuStyle = OdinMenuStyle.TreeViewStyle };
-            tree.Config.DrawSearchToolbar = true;
-            tree.Add("Log", null);
-
-            var types = new HashSet<Type>(TypeCache.GetTypesWithAttribute<RippleData>());
-            assetGuids ??= FindAssets(types);
-
-            foreach (string guid in assetGuids)
+            log = root.Q<MultiColumnListView>("log");
+            log.itemsSource = shown;
+            Fill("time", entry => entry.time);
+            Fill("asset", NameOf);
+            Fill("caller", entry => entry.caller);
+            Fill("value", entry => entry.value);
+            log.selectionChanged += _ => EditorGUIUtility.PingObject((log.selectedItem as LogEntry)?.context);
+            log.itemsChosen += _ =>
             {
-                string path = AssetDatabase.GUIDToAssetPath(guid);
-                Type type = AssetDatabase.GetMainAssetTypeAtPath(path);
-                if (types.Contains(type))
-                    tree.AddAssetAtPath(type.Name + "/" + Path.GetFileNameWithoutExtension(path), path);
-            }
+                if (log.selectedItem is LogEntry entry && ids.TryGetValue(AssetDatabase.GetAssetPath(entry.context), out int id))
+                    assets.SetSelectionById(id);
+            };
 
-            tree.EnumerateTree().AddThumbnailIcons(true);
-            tree.MenuItems[0].Select();
-            return tree;
-        }
+            inspector = root.Q<ScrollView>("inspector");
+            assets = root.Q<TreeView>("assets");
+            assets.makeItem = () => new Label();
+            assets.bindItem = (element, index) => ((Label)element).text = Path.GetFileNameWithoutExtension(assets.GetItemDataForIndex<string>(index));
+            assets.selectionChanged += _ => Inspect(AssetDatabase.LoadMainAssetAtPath(assets.selectedItem as string));
 
-        private static string[] FindAssets(IEnumerable<Type> types)
-        {
-            string filter = "t:" + string.Join(" t:", types.Select(type => type.Name));
-            if (filter.Length > 1000)
-                filter = "t:ScriptableObject";
-            return AssetDatabase.FindAssets(filter, new[] { "Assets" });
-        }
-
-        protected override void OnBeginDrawEditors()
-        {
-            SirenixEditorGUI.BeginHorizontalToolbar(MenuTree.Config.SearchToolbarHeight);
-            GUILayout.Label(ShowsLog ? "Log" : "Assets: " + assetGuids.Length);
-            GUILayout.FlexibleSpace();
-
-            if (ShowsLog && SirenixEditorGUI.ToolbarButton("Clear"))
-                Logger.ResetLogs();
-
-            if (SirenixEditorGUI.ToolbarButton(new GUIContent(EditorIcons.Refresh.Raw, "Refresh the asset list")))
+            root.Q<ToolbarButton>("clear").clicked += Logger.ResetLogs;
+            root.Q<ToolbarSearchField>("search").RegisterValueChangedCallback(change =>
             {
-                assetGuids = null;
-                ForceMenuTreeRebuild();
-            }
+                filter = change.newValue;
+                logged = -1;
+                ShowAssets();
+            });
 
-            SirenixEditorGUI.EndHorizontalToolbar();
+            ShowAssets();
+            root.schedule.Execute(ShowLog).Every(250);
         }
 
-        protected override void DrawEditors()
+        private void Fill(string column, Func<LogEntry, string> text)
         {
-            if (!ShowsLog)
+            log.columns[column].makeCell = () =>
             {
-                base.DrawEditors();
-                return;
-            }
-
-            messageStyle ??= new GUIStyle(EditorStyles.label) { richText = true };
-            string filter = MenuTree.Config.SearchTerm;
-            List<LogEntry> logs = Logger.GetLogs();
-            for (int i = logs.Count - 1; i >= 0; i--)
-                if (string.IsNullOrEmpty(filter) || NameOf(logs[i]).Contains(filter, StringComparison.OrdinalIgnoreCase))
-                    DrawEntry(logs[i]);
-        }
-
-        private void DrawEntry(LogEntry entry)
-        {
-            using (new GUILayout.HorizontalScope())
-            {
-                if (GUILayout.Button(NameOf(entry), GUILayout.MinWidth(100), GUILayout.ExpandWidth(false)))
-                    Show(entry.context);
-
-                GUILayout.Label(entry.message, messageStyle);
-            }
+                var cell = new Label();
+                cell.AddToClassList("ripple-cell");
+                return cell;
+            };
+            log.columns[column].bindCell = (cell, row) => ((Label)cell).text = text(shown[row]);
         }
 
         private static string NameOf(LogEntry entry) => entry.context ? entry.context.name : "(destroyed)";
 
-        private void Show(UnityEngine.Object asset)
+        private bool Matches(string name) => name.Contains(filter, StringComparison.OrdinalIgnoreCase);
+
+        private void ShowLog()
         {
-            OdinMenuItem item = MenuTree.EnumerateTree().FirstOrDefault(candidate => ReferenceEquals(candidate.Value, asset));
-            if (item != null)
-                item.Select();
-            else
-                Selection.activeObject = asset;
+            if (logged == Logger.Logs.Count) return;
+
+            logged = Logger.Logs.Count;
+            shown.Clear();
+            for (int i = logged - 1; i >= 0; i--)
+                if (Matches(NameOf(Logger.Logs[i])))
+                    shown.Add(Logger.Logs[i]);
+            log.RefreshItems();
+        }
+
+        private void ShowAssets()
+        {
+            if (assets == null) return;
+
+            ids.Clear();
+            var items = new List<TreeViewItemData<string>> { new(0, Log) };
+            var groups = AssetDatabase.FindAssets("t:" + nameof(RippleStackTraceSO))
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(path => Matches(Path.GetFileNameWithoutExtension(path)))
+                .GroupBy(path => AssetDatabase.GetMainAssetTypeAtPath(path).Name)
+                .OrderBy(group => group.Key);
+            foreach (IGrouping<string, string> group in groups)
+            {
+                int groupId = ids.Count + items.Count;
+                var children = new List<TreeViewItemData<string>>();
+                foreach (string path in group.OrderBy(Path.GetFileNameWithoutExtension))
+                {
+                    ids[path] = groupId + children.Count + 1;
+                    children.Add(new TreeViewItemData<string>(ids[path], path));
+                }
+
+                items.Add(new TreeViewItemData<string>(groupId, group.Key, children));
+            }
+
+            assets.SetRootItems(items);
+            assets.Rebuild();
+            assets.ExpandAll();
+            assets.SetSelectionById(0);
+        }
+
+        private void Inspect(UnityEngine.Object asset)
+        {
+            log.EnableInClassList(RippleStyle.Hidden, asset);
+            inspector.EnableInClassList(RippleStyle.Hidden, !asset);
+            inspector.Clear();
+            if (asset)
+                inspector.Add(new InspectorElement(asset));
         }
     }
 }

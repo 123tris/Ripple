@@ -1,0 +1,90 @@
+.ripple-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.ripple-grow {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ripple-hidden {
+    display: none;
+}
+
+.ripple-indent {
+    margin-left: 15px;
+}
+
+.ripple-menu {
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+    flex-shrink: 0;
+    cursor: link;
+}
+
+.ripple-notes {
+    margin-bottom: 6px;
+    white-space: normal;
+}
+
+.ripple-heading {
+    -unity-font-style: bold;
+    margin-top: 6px;
+}
+
+.ripple-table {
+    max-height: 200px;
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+.ripple-cell {
+    padding-left: 4px;
+    -unity-text-align: middle-left;
+}
+
+.ripple-trace {
+    max-height: 160px;
+    margin-bottom: 4px;
+}
+
+.ripple-trace__frame {
+    font-size: 11px;
+    padding-left: 4px;
+}
+
+.ripple-trace__frame--link {
+    color: var(--unity-colors-link-text);
+    cursor: link;
+}
+
+.ripple-window {
+    flex-grow: 1;
+}
+
+.ripple-assets {
+    min-width: 200px;
+}
+
+.ripple-inspector {
+    padding: 6px;
+}
+
+.ripple-generator {
+    flex-grow: 1;
+    padding: 6px;
+}
+
+.ripple-types {
+    flex-grow: 1;
+    min-height: 60px;
+    margin-top: 2px;
+    margin-bottom: 6px;
+}
+
+.ripple-generate {
+    height: 28px;
+    margin-top: 6px;
+}

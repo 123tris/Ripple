@@ -1,7 +1,7 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace Ripple
 {
@@ -9,35 +9,34 @@ namespace Ripple
     [CreateAssetMenu(menuName = Config.EventMenu + "Void")]
     public class VoidEventSO : GameEvent
     {
-        [SerializeField] private Signal gameEvent = new();
+        [SerializeField, FormerlySerializedAs("gameEvent")] private Signal response = new();
 
-        public override bool HasListeners => gameEvent.HasListeners;
+        public override bool HasListeners => response.HasListeners;
 
-        internal override UnityEventBase SerializedResponse => gameEvent.Response;
+        internal override UnityEventBase SerializedResponse => response.Response;
 
-        [Button]
         public void Invoke(UnityEngine.Object sender = null)
         {
 #if UNITY_EDITOR
             RecordInvoke(ResolveCaller(sender), sender, null);
 #endif
-            gameEvent.Invoke();
+            response.Invoke();
         }
 
         public void Raise() => Invoke();
 
         public void AddListener(Action method)
         {
-            gameEvent.AddListener(method);
+            response.AddListener(method);
             RippleConnectionRegistry.RecordSubscribe(this, method);
         }
 
         public void RemoveListener(Action method)
         {
-            gameEvent.RemoveListener(method);
+            response.RemoveListener(method);
             RippleConnectionRegistry.RecordUnsubscribe(this, method);
         }
 
-        protected override void ClearListeners() => gameEvent.ClearListeners();
+        protected override void ClearListeners() => response.ClearListeners();
     }
 }

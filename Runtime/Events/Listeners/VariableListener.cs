@@ -1,12 +1,11 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Ripple
 {
     public class VariableListener<T> : MonoBehaviour, IRippleListener
     {
-        [SerializeField, Required, HideReferenceObjectPicker] private VariableSO<T> variable;
+        [SerializeField] private VariableSO<T> variable;
 
         [SerializeField] private Signal<T> onValueChanged = new();
 

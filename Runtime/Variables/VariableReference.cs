@@ -1,5 +1,4 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Ripple
@@ -11,7 +10,7 @@ namespace Ripple
 
         [SerializeField] private T _constantValue;
 
-        [SerializeField, InlineEditor] private BaseVariable<T> _variable;
+        [SerializeField] private BaseVariable<T> _variable;
 
         public VariableReference() { }
 

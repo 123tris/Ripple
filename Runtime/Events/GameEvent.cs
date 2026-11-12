@@ -1,11 +1,9 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Ripple
 {
-    [InlineEditor]
     public class GameEvent<T> : GameEvent
     {
         [SerializeField] private Signal<T> response = new();
@@ -14,7 +12,6 @@ namespace Ripple
 
         internal override UnityEventBase SerializedResponse => response.Response;
 
-        [Button, BoxGroup("Debug")]
         public virtual void Invoke(T parameter, UnityEngine.Object sender = null)
         {
             LogInvoke(parameter, sender);
@@ -42,7 +39,8 @@ namespace Ripple
 
     public abstract class GameEvent : RippleStackTraceSO
     {
-        [SerializeField, BoxGroup("Debug")] protected bool clearListenersOnPlaymode;
+        [SerializeField, Tooltip("Drop the listeners added from code each time play mode starts. For projects that enter play mode without a domain reload.")]
+        protected bool clearListenersOnPlaymode;
 
         public abstract bool HasListeners { get; }
 

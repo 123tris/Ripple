@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,43 +11,24 @@ namespace Ripple
     public abstract class RippleStackTraceSO : ScriptableObject
     {
 #if UNITY_EDITOR
-        [SerializeField, TextArea, HideInInlineEditors]
-        private string _developerNotes;
+        [SerializeField] private string _developerNotes;
 
-        [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors, HorizontalGroup("Debug/Disable"), LabelWidth(100)]
-        private bool disableLogging = false;
+        [SerializeField, Tooltip("Keep this asset out of the Ripple Debugger log.")]
+        private bool disableLogging;
 
-        [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors, HorizontalGroup("Debug/Disable"), LabelWidth(125)]
-        private bool disableStackTrace = false;
+        [SerializeField, Tooltip("Skip capturing the call stack. Callers are then named only when they pass themselves as the sender.")]
+        private bool disableStackTrace;
 
-        [SerializeField, BoxGroup("Debug", order: 1), HideInInlineEditors, LabelText("Scan prefabs too")]
-        private bool _scanPrefabs = true;
-
-        [ShowInInspector, TableList(IsReadOnly = true, AlwaysExpanded = true),
-         LabelText("Invoked by"), BoxGroup("Debug", order: 1), HideInInlineEditors]
-        protected readonly List<InvokeRecord> Invokers = new();
-
-        [ShowInInspector, TableList(IsReadOnly = true, AlwaysExpanded = true),
-         LabelText("Listeners"), BoxGroup("Debug", order: 1), HideInInlineEditors]
-        private readonly List<RippleConnections.ListenerRow> _listeners = new();
-
-        [Button("Scan Listeners"), BoxGroup("Debug", order: 1), HideInInlineEditors]
-        private void ScanListeners() => RippleConnections.PopulateListeners(this, _listeners, _scanPrefabs);
+        internal readonly List<InvokeRecord> Invokers = new();
 
         public sealed class InvokeRecord
         {
-            [TableColumnWidth(190, false)] public string Caller;
-            [TableColumnWidth(55, false)] public int Count;
+            public string Caller;
+            public int Count;
             public string LastValue;
-            [HideInTables, HideInInspector] public UnityEngine.Object Sender;
-            [HideInTables, HideInInspector] public double LastTimeStamp;
-            [HideInTables, HideInInspector] public string Trace;
-
-            [Button("Ping"), ShowIf("@Sender != null"), TableColumnWidth(60, false)]
-            private void Ping() => RippleConnections.Ping(Sender);
-
-            [Button("Trace"), ShowIf("@Trace != null"), TableColumnWidth(60, false)]
-            private void LogTrace() => Debug.Log($"{Caller}\n{Trace}", Sender);
+            public string LastTime;
+            public UnityEngine.Object Sender;
+            public string Trace;
         }
 #endif
 
@@ -73,13 +53,10 @@ namespace Ripple
 
             rec.Count++;
             rec.LastValue = valueText;
-            rec.LastTimeStamp = UnityEditor.EditorApplication.timeSinceStartup;
+            rec.LastTime = DateTime.Now.ToString("HH:mm:ss.fff");
 
-            if (disableLogging) return;
-            string message = valueText != null
-                ? $"Called by: <color=red>{caller}</color> \nWith value: <color=green>{valueText}</color>"
-                : $"Called by: <color=red>{caller}</color>";
-            Logger.Log(message, this);
+            if (!disableLogging)
+                Logger.Log(this, caller, valueText, rec.LastTime);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -125,7 +102,7 @@ namespace Ripple
             if (type.IsGenericType) type = type.GetGenericTypeDefinition();
             if (type == typeof(Signal) || type == typeof(Signal<>)) return true;
             string ns = type.Namespace;
-            return ns != null && (ns.StartsWith("UnityEngine.Events") || ns.StartsWith("System.Reflection"));
+            return ns != null && (ns.StartsWith("UnityEngine.Events") || ns.StartsWith("System.Reflection") || ns.StartsWith("Unity.Properties"));
         }
 
         protected void ClearInvokers() => Invokers.Clear();

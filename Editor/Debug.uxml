@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:Foldout name="debug" text="Debug" value="false" view-data-key="ripple-debug">
+        <ui:MultiColumnListView name="history" class="ripple-table" show-border="true" show-alternating-row-backgrounds="ContentOnly" fixed-item-height="20">
+            <ui:Columns>
+                <ui:Column name="caller" title="Raised By" stretchable="true" min-width="80" />
+                <ui:Column name="count" title="Count" width="50" />
+                <ui:Column name="value" title="Last Value" stretchable="true" min-width="60" />
+                <ui:Column name="time" title="At" width="86" />
+            </ui:Columns>
+        </ui:MultiColumnListView>
+        <ui:ScrollView name="trace" class="ripple-trace" />
+        <ui:MultiColumnListView name="listeners" class="ripple-table" show-border="true" show-alternating-row-backgrounds="ContentOnly" fixed-item-height="20">
+            <ui:Columns>
+                <ui:Column name="kind" title="Where" width="80" />
+                <ui:Column name="name" title="Listener" stretchable="true" min-width="80" />
+            </ui:Columns>
+        </ui:MultiColumnListView>
+        <ui:VisualElement class="ripple-row">
+            <ui:Button name="findListeners" text="Find Listeners" tooltip="List what listens to this asset: responses wired on it, code that subscribed, and listener components in the open scenes." />
+            <ui:Button name="searchPrefabs" text="Include Prefabs" tooltip="Also search every prefab in the project. Slow in a large project." />
+        </ui:VisualElement>
+        <uie:PropertyField binding-path="disableLogging" />
+        <uie:PropertyField binding-path="disableStackTrace" />
+    </ui:Foldout>
+</ui:UXML>

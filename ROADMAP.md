@@ -7,8 +7,9 @@ State and events as ScriptableObject assets, wired in the inspector, with enough
 Rules for any change:
 
 - **One way to do a thing.** One event type (`Signal`), one variable base, one listener per kind. A second mechanism for the same job is removed, not kept for compatibility.
-- **Use Unity before writing anything.** `UnityEvent`, `TypeCache`, UI Toolkit bindings, the console's stack trace links.
-- **Small enough to read in one sitting.** The package is about 2,100 lines. A feature that needs its own subsystem (dispatcher, sink, registry of registries) is the wrong shape.
+- **Use Unity before writing anything.** `UnityEvent`, `TypeCache`, UI Toolkit and its bindings, `PropertyField` for anything serialized. No third-party dependency.
+- **Layout in UXML, behaviour in C#.** An inspector or window is a UXML document, assigned to its script as a default reference. Fields are placed by `binding-path`. Code is only for what a document cannot do: live values, tables, buttons.
+- **Small enough to read in one sitting.** The package is about 2,300 lines of C# and 200 of UXML and USS. A feature that needs its own subsystem (dispatcher, sink, registry of registries) is the wrong shape.
 - **A feature lands when a real project needed it**, and in the smallest form that solves that project's problem.
 - **No comments.** Names carry the meaning. Reasons go in the changelog.
 
@@ -46,21 +47,19 @@ Pull request 3 (`XRJapan:main` into `main`, "Sync hotfixes") is 22 commits of fi
 | Runtime values were written into variable assets and showed up in version control | Stopped serializing the current value, marked assets dirty on reset | The current value is `[NonSerialized]` for variables and lists. Nothing to mark dirty. |
 | No way to restart a session without reloading | `BaseVariable.ResetAllVariables()` over a static instance list | `BaseVariable.ResetAll()` and a public `ResetValue()`. Lists are included. Listeners are notified, so UI follows. |
 | "Who changed this?" showed one method name, often a helper | A 30-frame stack trace string per invoke, a `context` argument, a `[ThreadStatic] CurrentInvoker` | `sender` argument on `SetCurrentValue` and `Invoke`. The full stack is captured once per distinct caller and logged with clickable links by the `Trace` button. No depth limit, no thread-static state. |
-| Every custom type needed five hand-written classes | Type Generator window | `Tools > Ripple > Type Generator`, using Odin's own type picker (the slow hand-built dropdown was the pull request's first attempt). Also generates the list type. |
+| Every custom type needed five hand-written classes | Type Generator window | `Tools > Ripple > Type Generator`, with a search field over the types in the project (the slow hand-built dropdown was the pull request's first attempt). Also generates the list type. |
 | IL2CPP builds failed on `dynamic` in `Add` | Per-type `Add` overrides | Already on `main`: `Add` is abstract and each numeric type implements it. |
 | A build failed on editor-only code | Hotfix | The runtime assembly is compiled without `UNITY_EDITOR` as part of the check before each commit. |
 | Lists could not be resized or filled in bulk | `AddRange`, `ResizeRange` | `AddRange`, `Resize`. Every mutation raises the item events. |
-| Clamped numbers were typed, not dragged | Duplicate slider properties and an `isClamped` check in the base class | One slider property on `NumericalVariable`. |
-| The logger filled bottom-up and could not be cleared | Reverse order, Clear button | Same, and the window no longer edits Unity's shared label style or leaks its subscription. |
+| Clamped numbers were typed, not dragged | Duplicate slider properties and an `isClamped` check in the base class | The value field is a slider whenever `Clamp` is on, in edit and play mode. |
+| The logger filled bottom-up and could not be cleared | Reverse order, Clear button | The Debugger's log is a table, newest first, with a Clear button. |
 | Project code could not reuse the menu paths | `Config` made public | `Config` is public, in its own file. |
 | Tools were scattered at the top of the Tools menu | `Tools/Ripple/` | Same. |
 | `GameObjectVariableSO` missing from the wizard | `[RippleData]` added | Added, and on the four event types that also lacked it. |
 
 Ripple's Unity floor is 6000.0, below the AVR projects (6000.1 and 6000.3). JamKit requires 6000.6 on its own; Ripple does not follow it. Keep Ripple free of APIs newer than its floor, and compile it against a 6000.0 editor before raising it.
 
-One thing the pull request points at is **not** solved:
-
-- **Odin as a hard dependency.** The pull request leaves TODOs to move Odin attributes out of the runtime. Not planned. It becomes worth doing only if a project cannot have Odin.
+The pull request also left TODOs to move the Odin attributes out of the runtime. Done in 0.3.0: the editor is UI Toolkit and nothing in the package references Odin.
 
 Moving an AVR project to 0.2.0 also means re-wiring UltEvent responses on its event and listener assets, because UltEvent data does not convert to `UnityEvent`. That is the real cost of the upgrade and should be scheduled, not slipped into a hotfix.
 
@@ -77,30 +76,56 @@ Moving an AVR project to 0.2.0 also means re-wiring UltEvent responses on its ev
 
 ### 0.3.0 release
 
-Everything below is on `feature/0.3.0`. Its tests pass in Unity 6000.0.26f1 and 6000.3.17f1.
+Everything below is on `feature/0.3.0`.
 
 | Candidate | What shipped |
 | --- | --- |
+| UI Toolkit editor | Every inspector, drawer and window. Layout in UXML documents the scripts reference, one stylesheet. |
+| No Odin requirement | No Odin attributes in the runtime and no define constraint on the assemblies. |
 | String and Color built in | Variable, reference, event, list and listeners for both. |
 | Per-instance variables | `LocalVariables` component. It copies the variables it lists the first time something asks, so script order does not matter. `variable.For(this)` returns the copy, or the shared asset when there is none. `VariableListener` calls it in `Awake`. |
 | Signals on lists | `OnItemAdded` and `OnItemRemoved` are `Signal<T>`. |
 | Drag to listen | A drop handler for the Hierarchy and the inspector. Uses the `EntityId` handlers from Unity 6000.3 on, the older ones below. |
 | One debug window | `Tools > Ripple > Debugger`. The Event Logger and the Wizard are removed. |
 
+Checked so far: the tests pass in Unity 6000.0.26f1 without Odin and in 6000.3.17f1 with Odin, including one test per asset type that builds its inspector. Every inspector and both windows were captured in edit and play mode in 6000.0.26f1, with and without Odin. The package compiles against 6000.5.7f1 in the JamKit host project, with JamKit on top.
+
 To release:
 
-1. Drag an event asset onto a GameObject in the editor once. The handler was run from a script with every asset type, but not with a real mouse drag.
+1. Try the three things only a mouse can check: drag an event asset onto a GameObject, open the menu at the end of a reference field, click a line of a call stack in the Debug foldout.
 2. Merge `feature/0.3.0` into `main`, tag `v0.3.0`, delete the branch.
 3. In JamKit, pin `v0.3.0` and let `Health` resolve its variable with `CurrentVariable.For(this)`, so the "leave empty when several objects share this prefab" caveat goes away.
+
+### Proposed, waiting for a yes
+
+These come from comparing Ripple with Ryan Hipple's own system (variable declarations, an instancer, and a value that is a literal, a global variable or an instanced variable) and from asking where interfaces with `[SerializeReference]` would help. None is built.
+
+**One field for any event.** A script or a graph node often needs only "some event". To listen, it does not care whether the event carries a value. To raise, it is happy to pass its value along or not.
+
+- `GameEvent`, the base class of every event asset, gets a plain `Raised` event and `Raise<T>(T value)`. `Raise` passes the value on when the asset is a `GameEvent<T>` and raises plainly when it is a `VoidEventSO`.
+- A field typed `GameEvent` then takes any event asset in the stock object picker. No drawer and no wrapper type.
+- `[SerializeReference]` is the wrong tool for this one. The two cases already share a base class, an asset cannot be assigned to an interface field, and a wrapper per case would put a type picker in front of a field that only needs an object picker.
+- First users: the `On` event of a JamKit Game Flow transition, and a void event in the raise list of a `Signal<T>`.
+- Open question: what happens when the field holds an event of another value type, such as an `IntEvent` raised with a float. Proposal: an exception that names both types.
+
+**Local variables with their own starting value.** Hipple's instancer lets each object override the initial value (100 health on one enemy, 300 on the boss). `LocalVariables` copies the asset as it is.
+
+- Each entry of `LocalVariables` becomes the variable plus an optional starting value, edited inline next to it.
+- This is where `[SerializeReference]` earns its place: the value's type differs per entry, so the entry holds a box the variable creates (`Override<T>`). Unity 6000.0 serializes generic managed references, object references inside them included; that was checked in the test project.
+- The variable asset stays the key. There is no separate declaration type: an asset is global until an object lists it.
+
+**References that follow local variables.** Hipple's value type has three modes. Ripple needs no third one, because the same asset is local wherever a `LocalVariables` component lists it. Smallest form: `reference.For(this)` in `Awake`, like `variable.For(this)`.
+
+**Graph nodes on local variables.** With the three above, a Graph Toolkit node can hold a variable or event asset as an option and resolve it against the object that runs the graph: "if this enemy's `Health` is below 50". The asset is the key and the runner's `LocalVariables` is the instancer. The nodes belong in JamKit, next to Game Flow. Ripple only has to keep `For` cheap.
 
 ### After 0.3.0
 
 Nothing here is scheduled. Each item is a gap seen while building 0.3.0 and waits for a project that hits it.
 
-- **References and local variables.** A `FloatReference` that points at a variable reads the shared asset, also below a `LocalVariables` component. Smallest form: `reference.For(this)`.
 - **Vector2 has an event and a variable listener but no variable.** Add `Vector2VariableSO` or remove `VariableListenerVector2`.
-- **Lists in the debug tools.** A list does not fill `Invoked by`, and `Scan Listeners` does not read the responses wired on its two Signals.
-- **Odin visibility attributes.** Odin applies the last visibility attribute on a member, so two of them on one member silently cancel. Keep one condition per member.
+- **Lists in the debug tools.** A list does not fill `Raised By`, and `Listeners` does not read the responses wired on its two Signals.
+- **Live values of custom types.** In play mode the value field edits the built-in types. A type from the Type Generator shows its `ToString()` and cannot be edited there.
+- **An empty reference in variable mode reads "None (Base Variable`1)".** That is how Unity names the generic field type.
 
 ### Not doing
 

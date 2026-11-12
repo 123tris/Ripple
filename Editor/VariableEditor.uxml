@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:Template name="Debug" src="Debug.uxml" />
+    <ui:Style src="Ripple.uss" />
+    <ui:VisualElement>
+        <ui:TextField binding-path="_developerNotes" multiline="true" placeholder-text="Notes" class="ripple-notes" />
+        <ui:VisualElement class="ripple-row">
+            <ui:VisualElement name="value" class="ripple-grow" />
+            <ui:Button name="reset" text="Reset" tooltip="Set the value back to where it started." />
+        </ui:VisualElement>
+        <ui:VisualElement name="clamp">
+            <uie:PropertyField binding-path="_isClamped" label="Clamp" />
+            <ui:VisualElement name="range" class="ripple-indent">
+                <uie:PropertyField binding-path="min" />
+                <uie:PropertyField binding-path="max" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <uie:PropertyField binding-path="_persist" />
+        <ui:VisualElement name="saved" class="ripple-row ripple-indent">
+            <uie:PropertyField binding-path="_persistKey" label="Key" class="ripple-grow" />
+            <ui:Button name="clearSaved" text="Clear Saved Value" />
+        </ui:VisualElement>
+        <uie:PropertyField binding-path="OnValueChanged" />
+        <ui:Instance template="Debug" />
+    </ui:VisualElement>
+</ui:UXML>

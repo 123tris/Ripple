@@ -1,23 +1,22 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace Ripple
 {
-    [InlineEditor]
-    public class VariableListSO<T> : BaseVariable, IList<T>
+    public abstract class VariableListSO : BaseVariable { }
+
+    public class VariableListSO<T> : VariableListSO, IList<T>
     {
-        [SerializeField, FormerlySerializedAs("_currentValue"), HideInPlayMode]
+        [SerializeField, FormerlySerializedAs("_currentValue")]
         private List<T> _initialValues = new();
 
-        [NonSerialized, ShowInInspector, HideInEditorMode, LabelText("Values")]
-        private List<T> _currentValue = new();
+        [NonSerialized] private List<T> _currentValue = new();
 
-        [HideInInlineEditors] public Signal<T> OnItemAdded = new();
-        [HideInInlineEditors] public Signal<T> OnItemRemoved = new();
+        public Signal<T> OnItemAdded = new();
+        public Signal<T> OnItemRemoved = new();
 
         public List<T> CurrentValues => _currentValue;
 
@@ -73,7 +72,6 @@ namespace Ripple
 
         public void Clear() => Resize(0);
 
-        [Button, BoxGroup("Debug", order: 1), HideInInlineEditors]
         public override void ResetValue()
         {
             Clear();

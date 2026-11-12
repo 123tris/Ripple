@@ -1,7 +1,5 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Sirenix.OdinInspector;
 
 namespace Ripple
 {
@@ -9,9 +7,7 @@ namespace Ripple
     {
         private static readonly List<LogEntry> logs = new();
 
-        public static Action<LogEntry> onLogAdded;
-
-        public static List<LogEntry> GetLogs() => new(logs);
+        public static IReadOnlyList<LogEntry> Logs => logs;
 
 #if UNITY_EDITOR
         static Logger()
@@ -27,20 +23,15 @@ namespace Ripple
         public static void ResetLogs() => logs.Clear();
 
         [Conditional("UNITY_EDITOR")]
-        public static void Log(string message, UnityEngine.Object context)
-        {
-            LogEntry logEntry = new() { message = message, context = context };
-            logs.Add(logEntry);
-            onLogAdded?.Invoke(logEntry);
-        }
+        public static void Log(UnityEngine.Object context, string caller, string value, string time) =>
+            logs.Add(new LogEntry { context = context, caller = caller, value = value, time = time });
     }
 
     public class LogEntry
     {
-        [HorizontalGroup("Log Entry"), HideLabel]
         public UnityEngine.Object context;
-
-        [HorizontalGroup("Log Entry"), HideLabel]
-        public string message;
+        public string caller;
+        public string value;
+        public string time;
     }
 }

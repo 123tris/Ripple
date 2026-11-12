@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 
-internal static class TypeExtension
+namespace Ripple
 {
-    public static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic)
+    internal static class TypeExtension
     {
-        while (toCheck != null && toCheck != typeof(object))
+        public static Type ArgumentOf(this Type type, Type definition)
         {
-            Type current = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
-            if (generic == current) return true;
-            toCheck = toCheck.BaseType;
-        }
+            for (; type != null; type = type.BaseType)
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == definition)
+                    return type.GetGenericArguments()[0];
 
-        return false;
+            return null;
+        }
     }
 }

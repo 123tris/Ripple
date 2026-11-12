@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using Unity.Properties;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,20 +7,19 @@ using UnityEngine.UIElements;
 
 namespace Ripple
 {
-    [InlineEditor]
     public class VariableSO<T> : BaseVariable<T>, INotifyBindablePropertyChanged
     {
         [NonSerialized] private protected T _currentValue;
 
-        [SerializeField, PropertyOrder(-1), HideIf("@UnityEngine.Application.isPlaying || UsesSlider")] private T _initialValue;
+        [SerializeField] private T _initialValue;
 
         [SerializeField, Tooltip("Save the value to PlayerPrefs on change and restore it next session. Avoid on per-frame variables, every change writes.")]
         private bool _persist;
 
-        [SerializeField, ShowIf(nameof(_persist)), Tooltip("PlayerPrefs key. Leave empty to use the asset name.")]
+        [SerializeField, Tooltip("PlayerPrefs key. Leave empty to use the asset name.")]
         private string _persistKey;
 
-        [HideInInlineEditors] public Signal<T> OnValueChanged = new();
+        public Signal<T> OnValueChanged = new();
 
         private T _previousValue;
 
@@ -31,15 +29,7 @@ namespace Ripple
 
         private T StartValue => _persist && TryLoadSavedValue(out T saved) ? saved : _initialValue;
 
-        private protected virtual bool UsesSlider => false;
-
-        private protected T InitialValue
-        {
-            get => _initialValue;
-            set => _initialValue = value;
-        }
-
-        [CreateProperty, ShowInInspector, PropertyOrder(-1), ShowIf("@UnityEngine.Application.isPlaying && !UsesSlider"), LabelText("Value")]
+        [CreateProperty]
         public override T CurrentValue
         {
             get => _currentValue;
@@ -63,7 +53,6 @@ namespace Ripple
             OnValueChanged.Invoke(value);
         }
 
-        [Button, BoxGroup("Debug", order: 1), HideInInlineEditors]
         public override void ResetValue() => SetCurrentValue(StartValue);
 
         public void AddListener(Action<T> method)
@@ -76,6 +65,12 @@ namespace Ripple
         {
             OnValueChanged.RemoveListener(method);
             RippleConnectionRegistry.RecordUnsubscribe(this, method);
+        }
+
+        public override void ClearSavedValue()
+        {
+            PlayerPrefs.DeleteKey(PersistKey);
+            if (!Application.isPlaying) Restore();
         }
 
         protected override void Restore() => _currentValue = StartValue;
@@ -97,13 +92,6 @@ namespace Ripple
             value = JsonUtility.FromJson<PersistBox>(PlayerPrefs.GetString(PersistKey)).Value;
             return true;
         }
-
-        [Button("Clear Saved Value"), ShowIf(nameof(_persist))]
-        private void ClearSavedValue()
-        {
-            PlayerPrefs.DeleteKey(PersistKey);
-            if (!Application.isPlaying) Restore();
-        }
     }
 
     public abstract class BaseVariable<T> : BaseVariable
@@ -124,6 +112,8 @@ namespace Ripple
         }
 
         public abstract void ResetValue();
+
+        public virtual void ClearSavedValue() { }
 
         protected abstract void Restore();
 

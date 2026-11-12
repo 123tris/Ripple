@@ -1,14 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Sirenix.OdinInspector;
-using Sirenix.OdinInspector.Editor;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Ripple
 {
-    public class RippleTypeGenerator : OdinEditorWindow
+    public class RippleTypeGenerator : EditorWindow
     {
         [Flags]
         private enum Parts
@@ -20,27 +21,73 @@ namespace Ripple
             List = 16,
         }
 
-        [ShowInInspector, InfoBox("Generic types are not supported.", InfoMessageType.Error, "@type != null && type.IsGenericType")]
+        private static Type[] all;
+
+        [SerializeField] private VisualTreeAsset layout;
+        [SerializeField] private string folder = "Assets/Ripple";
+        [SerializeField] private string @namespace;
+        [SerializeField] private Parts parts = Parts.Variable | Parts.VariableListener | Parts.Event | Parts.EventListener | Parts.List;
+
+        private readonly List<Type> matches = new();
         private Type type;
 
-        [SerializeField, FolderPath] private string folder = "Assets/Ripple";
-
-        [SerializeField] private string @namespace;
-
-        [SerializeField, EnumToggleButtons, HideLabel]
-        private Parts parts = Parts.Variable | Parts.VariableListener | Parts.Event | Parts.EventListener | Parts.List;
-
         [MenuItem("Tools/Ripple/Type Generator")]
-        private static void OpenWindow() => GetWindow<RippleTypeGenerator>("Ripple Type Generator");
+        private static void Open() => GetWindow<RippleTypeGenerator>("Ripple Type Generator");
 
-        protected override void OnEnable()
+        private void OnEnable()
         {
-            base.OnEnable();
             if (string.IsNullOrEmpty(@namespace))
                 @namespace = EditorSettings.projectGenerationRootNamespace;
         }
 
-        [Button(ButtonSizes.Large), EnableIf("@type != null && !type.IsGenericType")]
+        private void CreateGUI()
+        {
+            VisualElement root = rootVisualElement;
+            RippleStyle.Restore(this, ref layout);
+            layout.CloneTree(root);
+            root.Bind(new SerializedObject(this));
+
+            all ??= TypeCache.GetTypesDerivedFrom<object>()
+                .Concat(typeof(object).Assembly.GetExportedTypes())
+                .Where(candidate => candidate.IsVisible && !candidate.IsGenericType && !(candidate.IsAbstract && candidate.IsSealed))
+                .ToArray();
+
+            var generate = root.Q<Button>("generate");
+            generate.SetEnabled(false);
+            generate.clicked += Generate;
+
+            var list = root.Q<ListView>("matches");
+            list.itemsSource = matches;
+            list.makeItem = () => new Label();
+            list.bindItem = (element, index) => ((Label)element).text = matches[index].FullName;
+            list.selectionChanged += _ =>
+            {
+                type = list.selectedItem as Type;
+                generate.SetEnabled(type != null);
+                generate.text = type == null ? "Generate" : $"Generate {type.Name} Types";
+            };
+
+            root.Q<ToolbarSearchField>("search").RegisterValueChangedCallback(change =>
+            {
+                matches.Clear();
+                if (change.newValue.Length > 1)
+                    matches.AddRange(all
+                        .Where(candidate => candidate.Name.Contains(change.newValue, StringComparison.OrdinalIgnoreCase))
+                        .OrderBy(candidate => candidate.Name.Length)
+                        .ThenBy(candidate => candidate.FullName)
+                        .Take(100));
+                list.ClearSelection();
+                list.RefreshItems();
+            });
+
+            root.Q<Button>("browse").clicked += () =>
+            {
+                string picked = EditorUtility.OpenFolderPanel("Folder for generated types", folder, "");
+                if (picked.StartsWith(Application.dataPath))
+                    folder = "Assets" + picked.Substring(Application.dataPath.Length);
+            };
+        }
+
         private void Generate()
         {
             string name = type.Name;
