@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (branch `feature/jamkit`, not yet on `main`)
+## 0.2.0
 
 ### Events
 

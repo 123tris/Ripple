@@ -16,12 +16,12 @@ Rules for any change:
 
 | Ref | What it is |
 | --- | --- |
-| `main` | 0.1.4, the UltEvents line. Projects that install Ripple without a branch get this. Tagged `v0.1.4`. |
-| `feature/jamkit` | 0.2.0, the current line. JamKit pins it. Becomes `main` at the 0.2.0 release. |
-| `feature/abstraction+runtime-registry` | Fully contained in `feature/jamkit`. Kept only because JamKit `main` and the GMTK 2026 project still pin it. Delete once neither does. |
+| `main` | The current line. Every release is a tag on it: `v0.2.0` is the latest. |
+| `v0.1.4` | The last release on UltEvents. Older projects pin it, or the exact commit they were built on. |
+| `feature/abstraction+runtime-registry` | Fully contained in `main`. Kept only because JamKit `main` and the GMTK 2026 project still pin it. Delete once neither does. |
 | `archive/*` tags | The retired experiments below. Restore one with `git switch -c <name> archive/<name>`. |
 
-Work happens on short-lived branches off the current line and merges back. Experiments that are not going to merge get an `archive/` tag and the branch is deleted.
+Work happens on short-lived branches off `main` and merges back. Projects pin a tag, never `main`. Experiments that are not going to merge get an `archive/` tag and the branch is deleted.
 
 ## What the old branches tried
 
@@ -34,11 +34,11 @@ Every branch below was an attempt at a real need. The need is kept where it hold
 | `feature/command-system` | `[SerializeReference]` command lists with conditions, run from an asset | Dropped. A `Signal` already runs a list of actions from the inspector, and branching belongs in code. |
 | `feature/refactor-v1` | Color, String and Quaternion types; event groups; settings provider; factory; `Unit`; reference-usage search; richer logger; tests | Types: covered by the Type Generator, with String and Color to ship built in. Event groups: covered by a Signal's raise list. Usage search: covered by `Scan Listeners`. Tests: kept as an idea, `Tests/` now exists. The rest dropped. |
 | `v2-redesign` (and the unpushed "v3 overhaul" commit) | Ground-up rewrite: channels and a dispatcher, generated code for every built-in type, diagnostics sinks, traits and validators, snapshots, per-frame coalescing, instancers, a debugger window, a project validator | Dropped as a whole. It is 6,000 lines against 2,000 to deliver the same variables and events. Three ideas survive in smaller form: instancers (below), one debug window (below), and drag-an-asset-onto-an-object to create its listener (below). |
-| `feature/abstraction+runtime-registry` | Listener scan, runtime subscriber registry, PlayerPrefs persistence, draggable reference label | Merged. All of it is in `feature/jamkit`. |
+| `feature/abstraction+runtime-registry` | Listener scan, runtime subscriber registry, PlayerPrefs persistence, draggable reference label | Merged. All of it is in 0.2.0. |
 
 ## What AVR Japan needed
 
-Pull request 3 (`XRJapan:main` into `main`, "Sync hotfixes") is 22 commits of fixes made under project pressure. It is not merged. Each problem it solved is listed here with how the current line solves it.
+Pull request 3 (`XRJapan:main` into `main`, "Sync hotfixes") is 22 commits of fixes made under project pressure. It is not merged. Each problem it solved is listed here with how 0.2.0 solves it.
 
 | Problem at AVR | In the pull request | In 0.2.0 |
 | --- | --- | --- |
@@ -65,14 +65,13 @@ Moving an AVR project to 0.2.0 also means re-wiring UltEvent responses on its ev
 
 ## Next
 
-### 0.2.0 release
+### Left over from the 0.2.0 release
 
-1. Open a project on Unity 6000.0 or newer and run the `Metz.Ripple.Tests` assembly. Nothing in 0.2.0 has run inside Unity yet; it is compile-checked only.
-2. Look at three inspectors by eye: a `Signal` field, a clamped `FloatVariableSO` (slider), and the `Invoked by` table with its `Trace` button.
-3. Merge `feature/jamkit` into `main`, tag `v0.2.0`, point JamKit at the tag.
-4. Projects that install Ripple with no branch follow `main` and will pick up 0.2.0 on their next package update. Pin them to `#v0.1.4` first if they should stay on UltEvents.
-5. Delete `feature/jamkit` and `feature/abstraction+runtime-registry`.
-6. Close pull request 3 with a link to the table above.
+0.2.0 is on `main`, tagged `v0.2.0`. Its tests ran in Unity 6000.0.26f1 and its inspectors were checked in edit and play mode.
+
+- Close pull request 3 with a link to the table above.
+- Delete `feature/abstraction+runtime-registry` once JamKit `main` and the GMTK 2026 project pin a tag instead.
+- An AVR project moves to 0.2.0 when the UltEvent re-wiring is scheduled, not before.
 
 ### 0.3.0 candidates, in order
 

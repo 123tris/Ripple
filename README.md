@@ -9,13 +9,15 @@ Requires Odin Inspector. See [ROADMAP.md](ROADMAP.md) for where the package is g
 Add to `Packages/manifest.json`:
 
 ```json
-"com.metz.ripple": "https://github.com/123tris/Ripple.git#feature/jamkit"
+"com.metz.ripple": "https://github.com/123tris/Ripple.git#v0.2.0"
 ```
 
 | Ref | Version | Notes |
 | --- | --- | --- |
-| `feature/jamkit` | 0.2.0 | Current work. Signal instead of UltEvents. Unity 6000.0 or newer. |
-| `v0.1.4` (`main`) | 0.1.4 | Last UltEvents release. Unity 2022.1 or newer. |
+| `v0.2.0` | 0.2.0 | Current release. Signal instead of UltEvents. Unity 6000.0 or newer. |
+| `v0.1.4` | 0.1.4 | Last UltEvents release. Unity 2022.1 or newer. |
+
+Installing without a ref follows `main`, which moves with every release. Pin a tag.
 
 ## The pieces
 
