@@ -70,6 +70,7 @@ Moving an AVR project to 0.2.0 also means re-wiring UltEvent responses on its ev
 
 0.2.0 is on `main`, tagged `v0.2.0`. Its tests ran in Unity 6000.0.26f1 and its inspectors were checked in edit and play mode.
 
+- Delete the remote branches `feature/jamkit`, `random-variables`, `feature/variable-declaration`, `feature/command-system`, `feature/refactor-v1` and `v2-redesign`. `feature/jamkit` is merged; the rest are kept as `archive/` tags.
 - Close pull request 3 with a link to the table above.
 - Delete `feature/abstraction+runtime-registry` once JamKit `main` and the GMTK 2026 project pin a tag instead.
 - An AVR project moves to 0.2.0 when the UltEvent re-wiring is scheduled, not before.
