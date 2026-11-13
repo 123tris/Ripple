@@ -1,13 +1,17 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:ripple="Ripple" editor-extension-mode="True">
     <ui:Template name="Debug" src="Debug.uxml" />
     <ui:Style src="Ripple.uss" />
-    <ui:VisualElement>
+    <ui:VisualElement class="ripple-editor ripple-event">
         <ui:TextField binding-path="_developerNotes" multiline="true" placeholder-text="Notes" class="ripple-notes" />
         <ui:VisualElement name="raiseRow" class="ripple-row" tooltip="Raises the event. Available in play mode.">
             <ui:Button name="raise" text="Raise" />
-            <ui:VisualElement name="argument" class="ripple-grow" />
+            <ui:VisualElement name="argument" class="ripple-grow">
+                <ui:FloatField value="0" />
+            </ui:VisualElement>
         </ui:VisualElement>
-        <uie:PropertyField binding-path="response" />
-        <ui:Instance template="Debug" />
+        <ripple:SignalField label="Response" binding-path="response" />
+        <ui:Instance template="Debug">
+            <ui:Toggle label="Clear Listeners On Play" binding-path="clearListenersOnPlaymode" tooltip="Drop the listeners added from code each time play mode starts. For projects that enter play mode without a domain reload." class="unity-base-field__aligned" />
+        </ui:Instance>
     </ui:VisualElement>
 </ui:UXML>

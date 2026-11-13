@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Label text="6" class="ripple-cell">
+        <Bindings>
+            <ui:DataBinding property="text" data-source-path="Value" binding-mode="ToTarget" />
+        </Bindings>
+    </ui:Label>
+</ui:UXML>

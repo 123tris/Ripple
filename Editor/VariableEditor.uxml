@@ -1,25 +1,27 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:ripple="Ripple" editor-extension-mode="True">
     <ui:Template name="Debug" src="Debug.uxml" />
     <ui:Style src="Ripple.uss" />
-    <ui:VisualElement>
+    <ui:VisualElement class="ripple-editor ripple-variable ripple-variable--clamped ripple-variable--persisted">
         <ui:TextField binding-path="_developerNotes" multiline="true" placeholder-text="Notes" class="ripple-notes" />
         <ui:VisualElement class="ripple-row">
-            <ui:VisualElement name="value" class="ripple-grow" />
-            <ui:Button name="reset" text="Reset" tooltip="Set the value back to where it started." />
+            <ui:VisualElement name="value" class="ripple-grow">
+                <ui:Slider label="Initial Value" low-value="0" high-value="10" value="7" show-input-field="true" class="unity-base-field__aligned" />
+            </ui:VisualElement>
+            <ui:Button name="reset" text="Reset" tooltip="Set the value back to where it started." class="ripple-variable__reset" />
         </ui:VisualElement>
-        <ui:VisualElement name="clamp">
-            <uie:PropertyField binding-path="_isClamped" label="Clamp" />
-            <ui:VisualElement name="range" class="ripple-indent">
-                <uie:PropertyField binding-path="min" />
-                <uie:PropertyField binding-path="max" />
+        <ui:VisualElement class="ripple-variable__clamp">
+            <ui:Toggle label="Clamp" binding-path="_isClamped" value="true" class="unity-base-field__aligned" />
+            <ui:VisualElement class="ripple-variable__range">
+                <ripple:ReferenceField label="Min" binding-path="min" />
+                <ripple:ReferenceField label="Max" binding-path="max" />
             </ui:VisualElement>
         </ui:VisualElement>
-        <uie:PropertyField binding-path="_persist" />
-        <ui:VisualElement name="saved" class="ripple-row ripple-indent">
-            <uie:PropertyField binding-path="_persistKey" label="Key" class="ripple-grow" />
+        <ui:Toggle label="Persist" binding-path="_persist" value="true" tooltip="Save the value to PlayerPrefs on change and restore it next session. Avoid on per-frame variables, every change writes." class="unity-base-field__aligned" />
+        <ui:VisualElement class="ripple-row ripple-variable__saved">
+            <ui:TextField label="Key" binding-path="_persistKey" tooltip="PlayerPrefs key. Leave empty to use the asset name." class="ripple-grow unity-base-field__aligned" />
             <ui:Button name="clearSaved" text="Clear Saved Value" />
         </ui:VisualElement>
-        <uie:PropertyField binding-path="OnValueChanged" />
+        <ripple:SignalField label="On Value Changed" binding-path="OnValueChanged" />
         <ui:Instance template="Debug" />
     </ui:VisualElement>
 </ui:UXML>

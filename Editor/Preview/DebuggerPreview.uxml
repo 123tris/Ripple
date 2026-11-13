@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <ui:Template name="RippleDebugger" src="../RippleDebugger.uxml" />
+    <ui:Instance template="RippleDebugger" data-source="project://database/Packages/com.metz.ripple/Editor/Preview/RipplePreview.asset?fileID=11400000&amp;guid=a72b4deca0304acdad982c4833b0ddf3&amp;type=2#RipplePreview" class="ripple-grow" />
+</ui:UXML>

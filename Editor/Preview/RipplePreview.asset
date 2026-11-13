@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21c26473ace4ab8ba4fb8ef4a6c4cad, type: 3}
+  m_Name: RipplePreview
+  m_EditorClassIdentifier:
+  History:
+  - Caller: 'Enemy->Attack'
+    Count: 12
+    Value: '6'
+    Time: '12:00:03.250'
+    Sender: {fileID: 0}
+    Trace:
+  - Caller: 'Player (Health)'
+    Count: 3
+    Value: '10'
+    Time: '12:00:02.500'
+    Sender: {fileID: 0}
+    Trace:
+  - Caller: 'UI Toolkit'
+    Count: 1
+    Value: '7'
+    Time: '12:00:01.125'
+    Sender: {fileID: 0}
+    Trace:
+  Listeners:
+  - Kind: 'Scene'
+    Name: 'Main / HUD (Variable Listener Float)'
+    Target: {fileID: 0}
+  - Kind: 'Code'
+    Name: 'Player (Health) -> OnHealthChanged'
+    Target: {fileID: 0}
+  - Kind: 'Response'
+    Name: 'GameOver (Void Event SO) -> Raise'
+    Target: {fileID: 0}
+  Log:
+  - Context: {fileID: 0}
+    Asset: 'Health'
+    Caller: 'Enemy->Attack'
+    Value: '6'
+    Time: '12:00:03.250'
+  - Context: {fileID: 0}
+    Asset: 'Damaged'
+    Caller: 'Enemy->Attack'
+    Value: '4'
+    Time: '12:00:03.249'
+  - Context: {fileID: 0}
+    Asset: 'Health'
+    Caller: 'Player (Health)'
+    Value: '10'
+    Time: '12:00:02.500'
+  - Context: {fileID: 0}
+    Asset: 'GameOver'
+    Caller: 'Health->Die'
+    Value: ''
+    Time: '12:00:01.750'

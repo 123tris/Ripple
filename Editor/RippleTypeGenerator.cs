@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.Properties;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -28,8 +29,15 @@ namespace Ripple
         [SerializeField] private string @namespace;
         [SerializeField] private Parts parts = Parts.Variable | Parts.VariableListener | Parts.Event | Parts.EventListener | Parts.List;
 
-        private readonly List<Type> matches = new();
         private Type type;
+
+        [CreateProperty] internal List<TypeEntry> Matches { get; } = new();
+
+        internal sealed class TypeEntry
+        {
+            public string FullName;
+            public Type Type;
+        }
 
         [MenuItem("Tools/Ripple/Type Generator")]
         private static void Open() => GetWindow<RippleTypeGenerator>("Ripple Type Generator");
@@ -43,8 +51,9 @@ namespace Ripple
         private void CreateGUI()
         {
             VisualElement root = rootVisualElement;
-            RippleStyle.Restore(this, ref layout);
+            RippleAssets.Restore(this, ref layout);
             layout.CloneTree(root);
+            root.dataSource = this;
             root.Bind(new SerializedObject(this));
 
             all ??= TypeCache.GetTypesDerivedFrom<object>()
@@ -57,25 +66,23 @@ namespace Ripple
             generate.clicked += Generate;
 
             var list = root.Q<ListView>("matches");
-            list.itemsSource = matches;
-            list.makeItem = () => new Label();
-            list.bindItem = (element, index) => ((Label)element).text = matches[index].FullName;
             list.selectionChanged += _ =>
             {
-                type = list.selectedItem as Type;
+                type = (list.selectedItem as TypeEntry)?.Type;
                 generate.SetEnabled(type != null);
                 generate.text = type == null ? "Generate" : $"Generate {type.Name} Types";
             };
 
             root.Q<ToolbarSearchField>("search").RegisterValueChangedCallback(change =>
             {
-                matches.Clear();
+                Matches.Clear();
                 if (change.newValue.Length > 1)
-                    matches.AddRange(all
+                    Matches.AddRange(all
                         .Where(candidate => candidate.Name.Contains(change.newValue, StringComparison.OrdinalIgnoreCase))
                         .OrderBy(candidate => candidate.Name.Length)
                         .ThenBy(candidate => candidate.FullName)
-                        .Take(100));
+                        .Take(100)
+                        .Select(candidate => new TypeEntry { FullName = candidate.FullName, Type = candidate }));
                 list.ClearSelection();
                 list.RefreshItems();
             });

@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Style src="Ripple.uss" />
+    <ui:VisualElement class="ripple-row">
+        <ui:FloatField name="stand-in" label="Value" class="ripple-grow unity-base-field__aligned" />
+        <ui:Image name="menu" tooltip="Use a constant or a variable asset." class="ripple-reference__menu" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -29,15 +30,17 @@ namespace Ripple
         {
             if (logs.Count == Capacity)
                 logs.RemoveAt(0);
-            logs.Add(new LogEntry { context = context, caller = caller, value = value, time = time });
+            logs.Add(new LogEntry { Context = context, Asset = context.name, Caller = caller, Value = value, Time = time });
         }
     }
 
+    [Serializable]
     internal class LogEntry
     {
-        public UnityEngine.Object context;
-        public string caller;
-        public string value;
-        public string time;
+        public UnityEngine.Object Context;
+        public string Asset;
+        public string Caller;
+        public string Value;
+        public string Time;
     }
 }

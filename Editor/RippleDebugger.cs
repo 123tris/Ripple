@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.Properties;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -11,18 +12,27 @@ namespace Ripple
 {
     public class RippleDebugger : EditorWindow
     {
-        private const string Log = "Log";
+        private const string AssetView = "ripple-debugger--asset";
 
         [SerializeField] private VisualTreeAsset layout;
-        [SerializeField] private string selected = Log;
+        [SerializeField] private string selected = "";
 
-        private readonly List<LogEntry> shown = new();
         private readonly Dictionary<string, int> ids = new();
+        private VisualElement root;
         private MultiColumnListView log;
         private TreeView assets;
         private ScrollView inspector;
         private string filter = "";
         private LogEntry newest;
+
+        [CreateProperty] internal List<LogEntry> Log { get; } = new();
+
+        internal sealed class Entry
+        {
+            public string Name;
+            public Texture Icon;
+            public string AssetPath;
+        }
 
         [MenuItem("Tools/Ripple/Debugger")]
         private static void Open() => GetWindow<RippleDebugger>("Ripple Debugger").minSize = new Vector2(480, 200);
@@ -33,24 +43,19 @@ namespace Ripple
 
         private void CreateGUI()
         {
-            VisualElement root = rootVisualElement;
-            RippleStyle.Restore(this, ref layout);
-            layout.CloneTree(root);
+            RippleAssets.Restore(this, ref layout);
+            layout.CloneTree(rootVisualElement);
+            rootVisualElement.dataSource = this;
+            root = rootVisualElement.Q(className: "ripple-debugger");
 
             log = root.Q<MultiColumnListView>("log");
-            log.itemsSource = shown;
-            Fill("time", entry => entry.time);
-            Fill("asset", NameOf);
-            Fill("caller", entry => entry.caller);
-            Fill("value", entry => entry.value);
-            log.selectionChanged += _ => EditorGUIUtility.PingObject((log.selectedItem as LogEntry)?.context);
+            log.selectionChanged += _ => EditorGUIUtility.PingObject((log.selectedItem as LogEntry)?.Context);
             log.itemsChosen += chosen => Reveal((LogEntry)chosen.First());
 
             inspector = root.Q<ScrollView>("inspector");
             assets = root.Q<TreeView>("assets");
-            assets.makeItem = MakeRow;
-            assets.bindItem = (row, index) => BindRow(row, assets.GetItemDataForIndex<string>(index));
-            assets.selectionChanged += _ => Select(assets.selectedItem as string);
+            assets.bindItem = (row, index) => row.dataSource = assets.GetItemDataForIndex<Entry>(index);
+            assets.selectionChanged += _ => Select(assets.selectedItem as Entry);
 
             root.Q<ToolbarButton>("clear").clicked += Logger.ResetLogs;
             root.Q<ToolbarSearchField>("search").RegisterValueChangedCallback(change =>
@@ -64,42 +69,11 @@ namespace Ripple
             root.schedule.Execute(ShowLog).Every(250);
         }
 
-        private void Fill(string column, Func<LogEntry, string> text)
-        {
-            log.columns[column].makeCell = () =>
-            {
-                var cell = new Label();
-                cell.AddToClassList("ripple-cell");
-                return cell;
-            };
-            log.columns[column].bindCell = (cell, row) => ((Label)cell).text = text(shown[row]);
-        }
-
-        private static VisualElement MakeRow()
-        {
-            var row = new VisualElement();
-            row.AddToClassList("ripple-row");
-            var icon = new Image();
-            icon.AddToClassList("ripple-icon");
-            row.Add(icon);
-            row.Add(new Label());
-            return row;
-        }
-
-        private void BindRow(VisualElement row, string item)
-        {
-            bool isAsset = ids.ContainsKey(item);
-            var icon = row.Q<Image>();
-            icon.image = isAsset ? AssetDatabase.GetCachedIcon(item) : item == Log ? EditorGUIUtility.IconContent("UnityEditor.ConsoleWindow").image : null;
-            icon.EnableInClassList(RippleStyle.Hidden, !icon.image);
-            row.Q<Label>().text = isAsset ? Path.GetFileNameWithoutExtension(item) : item;
-        }
-
-        private static string NameOf(LogEntry entry) => entry.context ? entry.context.name : "(destroyed)";
+        private static Texture Icon(string name) => EditorGUIUtility.IconContent(name).image;
 
         private bool Matches(string name) => name.Contains(filter, StringComparison.OrdinalIgnoreCase);
 
-        private bool Matches(LogEntry entry) => Matches(NameOf(entry)) || Matches(entry.caller);
+        private bool Matches(LogEntry entry) => Matches(entry.Asset) || Matches(entry.Caller);
 
         private void ShowLog()
         {
@@ -107,10 +81,10 @@ namespace Ripple
             if (latest == newest) return;
 
             newest = latest;
-            shown.Clear();
+            Log.Clear();
             for (int i = Logger.Logs.Count - 1; i >= 0; i--)
                 if (Matches(Logger.Logs[i]))
-                    shown.Add(Logger.Logs[i]);
+                    Log.Add(Logger.Logs[i]);
             log.RefreshItems();
         }
 
@@ -119,7 +93,9 @@ namespace Ripple
             if (assets == null) return;
 
             ids.Clear();
-            var items = new List<TreeViewItemData<string>> { new(0, Log) };
+            ids[""] = 0;
+            int id = 1;
+            var items = new List<TreeViewItemData<Entry>> { new(0, new Entry { Name = "Log", Icon = Icon("UnityEditor.ConsoleWindow"), AssetPath = "" }) };
             var groups = AssetDatabase.FindAssets("t:" + nameof(RippleStackTraceSO))
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Where(path => Matches(Path.GetFileNameWithoutExtension(path)))
@@ -127,32 +103,31 @@ namespace Ripple
                 .OrderBy(group => group.Key);
             foreach (IGrouping<string, string> group in groups)
             {
-                int groupId = ids.Count + items.Count;
-                var children = new List<TreeViewItemData<string>>();
+                int groupId = id++;
+                var children = new List<TreeViewItemData<Entry>>();
                 foreach (string path in group.OrderBy(Path.GetFileNameWithoutExtension))
                 {
-                    ids[path] = groupId + children.Count + 1;
-                    children.Add(new TreeViewItemData<string>(ids[path], path));
+                    ids[path] = id;
+                    children.Add(new TreeViewItemData<Entry>(id++, new Entry { Name = Path.GetFileNameWithoutExtension(path), Icon = AssetDatabase.GetCachedIcon(path), AssetPath = path }));
                 }
 
-                items.Add(new TreeViewItemData<string>(groupId, group.Key, children));
+                items.Add(new TreeViewItemData<Entry>(groupId, new Entry { Name = group.Key, Icon = Icon("Folder Icon") }, children));
             }
 
             assets.ClearSelection();
             assets.SetRootItems(items);
             assets.Rebuild();
             assets.ExpandAll();
-            assets.SetSelectionById(ids.TryGetValue(selected, out int id) ? id : 0);
+            assets.SetSelectionById(ids.TryGetValue(selected, out int found) ? found : 0);
         }
 
-        private void Select(string item)
+        private void Select(Entry entry)
         {
-            if (item == null || item != Log && !ids.ContainsKey(item)) return;
+            if (entry?.AssetPath == null) return;
 
-            selected = item;
-            UnityEngine.Object asset = item == Log ? null : AssetDatabase.LoadMainAssetAtPath(item);
-            log.EnableInClassList(RippleStyle.Hidden, asset);
-            inspector.EnableInClassList(RippleStyle.Hidden, !asset);
+            selected = entry.AssetPath;
+            UnityEngine.Object asset = entry.AssetPath == "" ? null : AssetDatabase.LoadMainAssetAtPath(entry.AssetPath);
+            root.EnableInClassList(AssetView, asset);
             inspector.Clear();
             if (asset)
                 inspector.Add(new InspectorElement(asset));
@@ -160,10 +135,10 @@ namespace Ripple
 
         private void Reveal(LogEntry entry)
         {
-            if (ids.TryGetValue(AssetDatabase.GetAssetPath(entry.context), out int id))
+            if (ids.TryGetValue(AssetDatabase.GetAssetPath(entry.Context), out int id) && id != 0)
                 assets.SetSelectionById(id);
             else
-                Selection.activeObject = entry.context;
+                Selection.activeObject = entry.Context;
         }
     }
 }

@@ -9,11 +9,12 @@ namespace Ripple
     [CustomEditor(typeof(BaseVariable), true), CanEditMultipleObjects]
     public class VariableEditor : RippleEditor
     {
+        private const string Clamped = "ripple-variable--clamped";
+        private const string Persisted = "ripple-variable--persisted";
+
         private Type type;
         private VisualElement slot;
         private VisualElement field;
-        private VisualElement range;
-        private Button reset;
         private SerializedProperty clamped;
         private SerializedProperty min;
         private SerializedProperty max;
@@ -24,26 +25,28 @@ namespace Ripple
         {
             type = target.GetType().ArgumentOf(typeof(VariableSO<>));
             slot = root.Q("value");
-            reset = root.Q<Button>("reset");
-            reset.clicked += () => ((BaseVariable)target).ResetValue();
+            root.Q<Button>("reset").clicked += () => ((BaseVariable)target).ResetValue();
 
             clamped = serializedObject.FindProperty("_isClamped");
             if (clamped == null)
             {
-                root.Q("clamp").RemoveFromHierarchy();
+                root.Q(className: "ripple-variable__clamp").RemoveFromHierarchy();
             }
             else
             {
                 min = serializedObject.FindProperty("min");
                 max = serializedObject.FindProperty("max");
-                range = root.Q("range");
-                root.TrackPropertyValue(clamped, _ => ShowAgain());
+                SetState(Clamped, clamped.boolValue);
+                root.TrackPropertyValue(clamped, changed =>
+                {
+                    SetState(Clamped, changed.boolValue);
+                    ShowAgain();
+                });
             }
 
             SerializedProperty persist = serializedObject.FindProperty("_persist");
-            VisualElement saved = root.Q("saved");
-            saved.EnableInClassList(RippleStyle.Hidden, !persist.boolValue);
-            root.TrackPropertyValue(persist, changed => saved.EnableInClassList(RippleStyle.Hidden, !changed.boolValue));
+            SetState(Persisted, persist.boolValue);
+            root.TrackPropertyValue(persist, changed => SetState(Persisted, changed.boolValue));
             root.Q<Button>("clearSaved").clicked += () =>
             {
                 foreach (BaseVariable variable in targets)
@@ -53,9 +56,6 @@ namespace Ripple
 
         protected override void Show(bool playing)
         {
-            reset.EnableInClassList(RippleStyle.Hidden, !playing);
-            range?.EnableInClassList(RippleStyle.Hidden, !clamped.boolValue);
-
             slot.Clear();
             field = playing ? Current() : Initial();
             slot.Add(field);

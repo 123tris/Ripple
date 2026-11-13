@@ -1,22 +1,30 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Template name="AssetRow" src="Rows/AssetRow.uxml" />
+    <ui:Template name="TimeCell" src="Cells/TimeCell.uxml" />
+    <ui:Template name="AssetCell" src="Cells/AssetCell.uxml" />
+    <ui:Template name="CallerCell" src="Cells/CallerCell.uxml" />
+    <ui:Template name="ValueCell" src="Cells/ValueCell.uxml" />
     <ui:Style src="Ripple.uss" />
-    <ui:VisualElement class="ripple-window">
+    <ui:VisualElement class="ripple-editor ripple-debugger">
         <uie:Toolbar>
             <uie:ToolbarSearchField name="search" class="ripple-grow" />
             <uie:ToolbarButton name="clear" text="Clear Log" />
         </uie:Toolbar>
-        <ui:TwoPaneSplitView fixed-pane-initial-dimension="200">
-            <ui:TreeView name="assets" class="ripple-assets" fixed-item-height="18" />
+        <ui:TwoPaneSplitView fixed-pane-initial-dimension="200" class="ripple-grow">
+            <ui:TreeView name="assets" item-template="Rows/AssetRow.uxml" fixed-item-height="18" class="ripple-debugger__assets" />
             <ui:VisualElement>
-                <ui:MultiColumnListView name="log" class="ripple-grow" show-alternating-row-backgrounds="ContentOnly" fixed-item-height="20">
+                <ui:MultiColumnListView name="log" binding-source-selection-mode="AutoAssign" show-alternating-row-backgrounds="ContentOnly" fixed-item-height="20" class="ripple-grow ripple-debugger__log">
+                    <Bindings>
+                        <ui:DataBinding property="itemsSource" data-source-path="Log" binding-mode="ToTargetOnce" />
+                    </Bindings>
                     <ui:Columns>
-                        <ui:Column name="time" title="Time" width="90" />
-                        <ui:Column name="asset" title="Asset" width="160" />
-                        <ui:Column name="caller" title="Raised By" stretchable="true" min-width="80" />
-                        <ui:Column name="value" title="Value" stretchable="true" min-width="60" />
+                        <ui:Column name="time" title="Time" width="90" cell-template="Cells/TimeCell.uxml" />
+                        <ui:Column name="asset" title="Asset" width="160" cell-template="Cells/AssetCell.uxml" />
+                        <ui:Column name="caller" title="Raised By" stretchable="true" min-width="80" cell-template="Cells/CallerCell.uxml" />
+                        <ui:Column name="value" title="Value" stretchable="true" min-width="60" cell-template="Cells/ValueCell.uxml" />
                     </ui:Columns>
                 </ui:MultiColumnListView>
-                <ui:ScrollView name="inspector" class="ripple-inspector ripple-grow" />
+                <ui:ScrollView name="inspector" class="ripple-grow ripple-debugger__inspector" />
             </ui:VisualElement>
         </ui:TwoPaneSplitView>
     </ui:VisualElement>

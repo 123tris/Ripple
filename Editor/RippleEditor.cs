@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using Unity.Properties;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -11,15 +12,22 @@ namespace Ripple
 {
     public abstract class RippleEditor : Editor
     {
+        private const string Playing = "ripple-editor--playing";
+
         private static readonly Regex location = new(@"\(at (.+):(\d+)\)$");
 
         [SerializeField] private VisualTreeAsset layout;
 
-        private List<RippleConnections.Listener> listeners = new();
+        private VisualElement root;
+        private Foldout debug;
         private MultiColumnListView history;
         private MultiColumnListView listenerTable;
         private ScrollView trace;
         private bool playing;
+
+        [CreateProperty] internal List<RippleStackTraceSO.InvokeRecord> History => Asset.Invokers;
+
+        [CreateProperty] internal List<RippleConnections.Listener> Listeners { get; } = new();
 
         private RippleStackTraceSO Asset => (RippleStackTraceSO)target;
 
@@ -27,62 +35,57 @@ namespace Ripple
 
         public override VisualElement CreateInspectorGUI()
         {
-            VisualElement root = layout.CloneTree();
+            TemplateContainer document = layout.CloneTree();
+            document.dataSource = this;
+            root = document.Q(className: "ripple-editor");
+            root.EnableInClassList("ripple-editor--multi", targets.Length > 1);
             Build(root);
-            BuildDebug(root.Q<Foldout>("debug"));
+            ConfigureControls();
+            BuildDebug();
 
             playing = Live;
-            Show(playing);
+            ShowPlaying();
             FindListeners(false);
             Refresh();
             root.schedule.Execute(Refresh).Every(250);
-            return root;
+            return document;
         }
 
         protected abstract void Build(VisualElement root);
 
-        protected abstract void Show(bool playing);
+        protected virtual void Show(bool playing) { }
 
         protected virtual void Tick() { }
 
+        protected void SetState(string modifier, bool on) => root.EnableInClassList(modifier, on);
+
         protected void ShowAgain() => Show(playing);
 
-        private void BuildDebug(Foldout debug)
+        private void ShowPlaying()
         {
-            debug.EnableInClassList(RippleStyle.Hidden, targets.Length > 1);
-
-            history = debug.Q<MultiColumnListView>("history");
-            history.itemsSource = Asset.Invokers;
-            Fill(history, "caller", row => Asset.Invokers[row].Caller);
-            Fill(history, "count", row => Asset.Invokers[row].Count.ToString());
-            Fill(history, "value", row => Asset.Invokers[row].LastValue);
-            Fill(history, "time", row => Asset.Invokers[row].LastTime);
-            history.selectionChanged += _ => ShowTrace();
-
-            trace = debug.Q<ScrollView>("trace");
-
-            listenerTable = debug.Q<MultiColumnListView>("listeners");
-            Fill(listenerTable, "kind", row => listeners[row].Kind);
-            Fill(listenerTable, "name", row => listeners[row].Name);
-            listenerTable.selectionChanged += _ =>
-            {
-                if (listenerTable.selectedIndex >= 0)
-                    EditorGUIUtility.PingObject(listeners[listenerTable.selectedIndex].Target);
-            };
-
-            debug.Q<Button>("findListeners").clicked += () => FindListeners(false);
-            debug.Q<Button>("searchPrefabs").clicked += () => FindListeners(true);
+            SetState(Playing, playing);
+            Show(playing);
         }
 
-        private static void Fill(MultiColumnListView table, string column, Func<int, string> text)
+        private void ConfigureControls()
         {
-            table.columns[column].makeCell = () =>
-            {
-                var cell = new Label();
-                cell.AddToClassList("ripple-cell");
-                return cell;
-            };
-            table.columns[column].bindCell = (cell, row) => ((Label)cell).text = text(row);
+            foreach (ReferenceField field in root.Query<ReferenceField>().ToList())
+                field.Configure(serializedObject.FindProperty(field.bindingPath));
+
+            foreach (SignalField field in root.Query<SignalField>().ToList())
+                field.Configure(serializedObject.FindProperty(field.bindingPath), target.GetType().FieldTypeOf(field.bindingPath).ArgumentOf(typeof(Signal<>)));
+        }
+
+        private void BuildDebug()
+        {
+            debug = root.Q<Foldout>("debug");
+            history = debug.Q<MultiColumnListView>("history");
+            history.selectionChanged += _ => ShowTrace();
+            trace = debug.Q<ScrollView>("trace");
+            listenerTable = debug.Q<MultiColumnListView>("listeners");
+            listenerTable.selectionChanged += _ => EditorGUIUtility.PingObject((listenerTable.selectedItem as RippleConnections.Listener)?.Target);
+            debug.Q<Button>("findListeners").clicked += () => FindListeners(false);
+            debug.Q<Button>("searchPrefabs").clicked += () => FindListeners(true);
         }
 
         private void Refresh()
@@ -90,20 +93,19 @@ namespace Ripple
             if (playing != Live)
             {
                 playing = Live;
-                Show(playing);
+                ShowPlaying();
                 FindListeners(false);
             }
 
-            history.EnableInClassList(RippleStyle.Hidden, Asset.Invokers.Count == 0);
+            debug.EnableInClassList("ripple-debug--history", Asset.Invokers.Count > 0);
             history.RefreshItems();
             Tick();
         }
 
         private void FindListeners(bool includePrefabs)
         {
-            listeners = RippleConnections.Find(Asset, includePrefabs);
-            listenerTable.itemsSource = listeners;
-            listenerTable.EnableInClassList(RippleStyle.Hidden, listeners.Count == 0);
+            RippleConnections.Find(Asset, includePrefabs, Listeners);
+            debug.EnableInClassList("ripple-debug--listeners", Listeners.Count > 0);
             listenerTable.RefreshItems();
         }
 
@@ -118,11 +120,11 @@ namespace Ripple
             foreach (string frame in record.Trace.Split('\n', StringSplitOptions.RemoveEmptyEntries))
             {
                 var line = new Label(frame);
-                line.AddToClassList("ripple-trace__frame");
+                line.AddToClassList("ripple-debug__frame");
                 Match match = location.Match(frame);
                 if (match.Success)
                 {
-                    line.AddToClassList("ripple-trace__frame--link");
+                    line.AddToClassList("ripple-debug__frame--link");
                     line.RegisterCallback<ClickEvent>(_ => InternalEditorUtility.OpenFileAtLineExternal(
                         Path.GetFullPath(match.Groups[1].Value), int.Parse(match.Groups[2].Value)));
                 }

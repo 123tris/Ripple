@@ -13,20 +13,19 @@ namespace Ripple
 #if UNITY_EDITOR
         [SerializeField] private string _developerNotes;
 
-        [SerializeField, Tooltip("Keep this asset out of the Ripple Debugger log.")]
-        private bool disableLogging;
+        [SerializeField] private bool disableLogging;
 
-        [SerializeField, Tooltip("Skip capturing the call stack. Callers are then named only when they pass themselves as the sender.")]
-        private bool disableStackTrace;
+        [SerializeField] private bool disableStackTrace;
 
         internal readonly List<InvokeRecord> Invokers = new();
 
+        [Serializable]
         public sealed class InvokeRecord
         {
             public string Caller;
             public int Count;
-            public string LastValue;
-            public string LastTime;
+            public string Value;
+            public string Time;
             public UnityEngine.Object Sender;
             public string Trace;
         }
@@ -52,11 +51,11 @@ namespace Ripple
             }
 
             rec.Count++;
-            rec.LastValue = valueText;
-            rec.LastTime = DateTime.Now.ToString("HH:mm:ss.fff");
+            rec.Value = valueText;
+            rec.Time = DateTime.Now.ToString("HH:mm:ss.fff");
 
             if (!disableLogging)
-                Logger.Log(this, caller, valueText, rec.LastTime);
+                Logger.Log(this, caller, valueText, rec.Time);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

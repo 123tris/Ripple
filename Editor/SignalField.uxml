@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Style src="Ripple.uss" />
+    <ui:VisualElement name="stand-in">
+        <ui:VisualElement class="ripple-signal__box">
+            <ui:Label name="header" text="On Value Changed" class="ripple-signal__header" />
+            <ui:Label text="List is empty" class="ripple-signal__empty" />
+        </ui:VisualElement>
+        <ui:VisualElement class="ripple-signal__footer">
+            <ui:Label text="+    −" class="ripple-signal__buttons" />
+        </ui:VisualElement>
+        <ui:Foldout text="Also Raise" value="false" />
+    </ui:VisualElement>
+    <ui:HelpBox name="warning" message-type="Warning" class="ripple-signal__warning" />
+</ui:UXML>

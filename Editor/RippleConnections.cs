@@ -1,36 +1,32 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Ripple
 {
     internal static class RippleConnections
     {
-        public readonly struct Listener
+        [Serializable]
+        public class Listener
         {
-            public readonly string Kind;
-            public readonly string Name;
-            public readonly Object Target;
-
-            public Listener(string kind, string name, Object target)
-            {
-                Kind = kind;
-                Name = name;
-                Target = target;
-            }
+            public string Kind;
+            public string Name;
+            public Object Target;
         }
 
-        public static List<Listener> Find(RippleStackTraceSO asset, bool includePrefabs)
+        public static void Find(RippleStackTraceSO asset, bool includePrefabs, List<Listener> found)
         {
-            var found = new List<Listener>();
+            found.Clear();
 
             foreach (UnityEventBase response in asset.SerializedResponses)
                 for (int i = 0; i < response.GetPersistentEventCount(); i++)
                 {
                     Object target = response.GetPersistentTarget(i);
-                    found.Add(new Listener("Response", (target ? NameOf(target) : "(missing)") + " → " + response.GetPersistentMethodName(i), target));
+                    found.Add(new Listener { Kind = "Response", Name = (target ? NameOf(target) : "(missing)") + " → " + response.GetPersistentMethodName(i), Target = target });
                 }
 
             foreach (SubscriberInfo subscriber in RippleConnectionRegistry.GetSubscribers(asset))
@@ -50,8 +46,6 @@ namespace Ripple
                     string path = AssetDatabase.GUIDToAssetPath(guid);
                     Collect(AssetDatabase.LoadAssetAtPath<GameObject>(path), asset, "Prefab", path, found);
                 }
-
-            return found;
         }
 
         private static Listener Subscriber(SubscriberInfo subscriber)
@@ -59,7 +53,7 @@ namespace Ripple
             object target = null;
             subscriber.Target?.TryGetTarget(out target);
             var owner = target as Object;
-            return new Listener("Code", (owner ? NameOf(owner) : subscriber.DeclaringType) + " → " + subscriber.MethodName, owner);
+            return new Listener { Kind = "Code", Name = (owner ? NameOf(owner) : subscriber.DeclaringType) + " → " + subscriber.MethodName, Target = owner };
         }
 
         private static string NameOf(Object owner) => $"{owner.name} ({owner.GetType().Name})";
@@ -70,7 +64,7 @@ namespace Ripple
             {
                 var component = (Component)listener;
                 if (listener.Target == asset && !found.Exists(known => known.Target == component))
-                    found.Add(new Listener(kind, $"{scope} / {HierarchyPath(component.transform)} ({component.GetType().Name})", component));
+                    found.Add(new Listener { Kind = kind, Name = $"{scope} / {HierarchyPath(component.transform)} ({component.GetType().Name})", Target = component });
             }
         }
 

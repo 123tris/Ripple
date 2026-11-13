@@ -2,7 +2,7 @@
 
 ScriptableObject variables and events for Unity, after Ryan Hipple's "Game Architecture with Scriptable Objects". State and events are assets, so systems meet in the inspector instead of referencing each other.
 
-No dependencies: the inspectors are UI Toolkit, and the package works the same with or without Odin Inspector. See [ROADMAP.md](ROADMAP.md) for where the package is going and [CHANGELOG.md](CHANGELOG.md) for what changed.
+No third-party dependencies: the inspectors are UI Toolkit, and the package works the same with or without Odin Inspector. See [ROADMAP.md](ROADMAP.md) for where the package is going and [CHANGELOG.md](CHANGELOG.md) for what changed.
 
 ## Install
 
@@ -113,4 +113,14 @@ Every variable, list and event asset has a Debug foldout in its inspector. A lis
 
 ## Editing the editor
 
-Each inspector and window is a UXML document next to its script in `Editor/`, assigned to the script as a default reference, and all of them share `Editor/Ripple.uss`. Open one in UI Builder to rearrange it. Fields are placed by `binding-path`, so moving one needs no code; the elements the scripts look up are found by `name`, so keep those.
+Each inspector and window is a UXML document next to its script in `Editor/`, assigned to the script as a default reference. Open one in UI Builder and pick **Active Editor Theme** in the canvas theme menu; the Builder starts in the runtime theme. The document then looks almost the same as the inspector it draws.
+
+- **Fields** are concrete controls placed by `binding-path`, with their tooltips in the UXML. Moving one needs no code. The elements the scripts look up are found by `name`, so keep those.
+- **Ripple controls.** `ReferenceField` and `SignalField` are in the Builder's Library under Project > Custom Controls > Ripple. In the Builder they show a stand-in of the field; the inspector replaces it with the real one.
+- **The value slot** of a variable shows a stand-in slider. The script swaps in the field for the variable's type.
+- **States are classes on the document root**: `ripple-editor--playing`, `ripple-variable--clamped`, `ripple-variable--persisted`, `ripple-debug--history` and so on. The stylesheet decides what each state shows, and the scripts only switch the classes. Add or remove one on the root to see that state in the Builder.
+- **Tables** take their cells from the documents in `Editor/Cells/`, and the Debugger's tree and the Type Generator's list take their rows from `Editor/Rows/`. Each cell is bound to one field of its row with data binding. A document that uses a cell or row document must also declare it as a `ui:Template`, so it imports first; a test checks every column.
+- **Previews.** `Editor/Preview/` shows the variable inspector with its Debug foldout open and the Debugger window, both filled with sample rows from `RipplePreview.asset`.
+- **Style.** `Editor/Ripple.uss` holds the sizes as `--ripple-*` variables on `.ripple-editor` and names classes block, element and modifier: `ripple-variable__range`, `ripple-variable--clamped`. Colors come from Unity's editor variables, so both editor themes work.
+
+A test fails on any `PropertyField` in a Ripple document, because UI Builder cannot draw one.

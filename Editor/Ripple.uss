@@ -1,3 +1,11 @@
+.ripple-editor {
+    --ripple-indent: 15px;
+    --ripple-icon-size: 16px;
+    --ripple-cell-padding: 4px;
+    --ripple-table-height: 200px;
+    --ripple-trace-height: 160px;
+}
+
 .ripple-row {
     flex-direction: row;
     align-items: center;
@@ -8,74 +16,134 @@
     flex-shrink: 1;
 }
 
-.ripple-hidden {
-    display: none;
-}
-
-.ripple-indent {
-    margin-left: 15px;
-}
-
-.ripple-menu {
-    width: 16px;
-    height: 16px;
-    margin-left: 2px;
-    flex-shrink: 0;
-    cursor: link;
-}
-
 .ripple-notes {
     margin-bottom: 6px;
     white-space: normal;
 }
 
-.ripple-heading {
-    -unity-font-style: bold;
-    margin-top: 6px;
-}
-
 .ripple-table {
-    max-height: 200px;
+    max-height: var(--ripple-table-height);
     margin-top: 2px;
     margin-bottom: 4px;
 }
 
 .ripple-cell {
-    padding-left: 4px;
+    padding-left: var(--ripple-cell-padding);
     -unity-text-align: middle-left;
 }
 
-.ripple-trace {
-    max-height: 160px;
+.ripple-variable__reset,
+.ripple-variable__range,
+.ripple-variable__saved,
+.ripple-list__live,
+.ripple-debug__history,
+.ripple-debug__listeners,
+.ripple-debugger__inspector,
+.ripple-reference__variable,
+.ripple-signal__warning {
+    display: none;
+}
+
+.ripple-editor--playing .ripple-variable__reset,
+.ripple-variable--clamped .ripple-variable__range,
+.ripple-variable--persisted .ripple-variable__saved,
+.ripple-editor--playing .ripple-list__live,
+.ripple-debug--history .ripple-debug__history,
+.ripple-debug--listeners .ripple-debug__listeners,
+.ripple-debugger--asset .ripple-debugger__inspector,
+.ripple-reference--variable .ripple-reference__variable,
+.ripple-signal--mismatch .ripple-signal__warning {
+    display: flex;
+}
+
+.ripple-editor--playing .ripple-list__initial,
+.ripple-editor--multi .ripple-debug,
+.ripple-debugger--asset .ripple-debugger__log,
+.ripple-reference--variable .ripple-reference__constant {
+    display: none;
+}
+
+.ripple-variable__range,
+.ripple-variable__saved {
+    margin-left: var(--ripple-indent);
+}
+
+.ripple-list__heading {
+    -unity-font-style: bold;
+    margin-top: 6px;
+}
+
+.ripple-debug__trace {
+    max-height: var(--ripple-trace-height);
     margin-bottom: 4px;
 }
 
-.ripple-trace__frame {
+.ripple-debug__frame {
     font-size: 11px;
-    padding-left: 4px;
+    padding-left: var(--ripple-cell-padding);
 }
 
-.ripple-trace__frame--link {
+.ripple-debug__frame--link {
     color: var(--unity-colors-link-text);
     cursor: link;
 }
 
-.ripple-window {
+.ripple-reference__menu {
+    width: var(--ripple-icon-size);
+    height: var(--ripple-icon-size);
+    margin-left: 2px;
+    flex-shrink: 0;
+    cursor: link;
+}
+
+.ripple-signal__box {
+    margin: 2px 3px 0 3px;
+    border-width: 1px;
+    border-color: var(--unity-colors-default-border);
+    border-radius: 3px;
+}
+
+.ripple-signal__header {
+    padding: 2px 6px;
+    border-bottom-width: 1px;
+    border-color: var(--unity-colors-default-border);
+    background-color: var(--unity-colors-inspector_titlebar-background);
+}
+
+.ripple-signal__empty {
+    padding: 6px;
+}
+
+.ripple-signal__footer {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-right: 22px;
+}
+
+.ripple-signal__buttons {
+    padding: 0 8px 2px 8px;
+    border-width: 0 1px 1px 1px;
+    border-color: var(--unity-colors-default-border);
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.ripple-debugger {
     flex-grow: 1;
 }
 
-.ripple-icon {
-    width: 16px;
-    height: 16px;
+.ripple-debugger__assets {
+    min-width: 200px;
+}
+
+.ripple-debugger__icon {
+    width: var(--ripple-icon-size);
+    height: var(--ripple-icon-size);
     margin-right: 4px;
     flex-shrink: 0;
 }
 
-.ripple-assets {
-    min-width: 200px;
-}
-
-.ripple-inspector {
+.ripple-debugger__inspector {
     padding: 6px;
 }
 
@@ -84,14 +152,14 @@
     padding: 6px;
 }
 
-.ripple-types {
+.ripple-generator__types {
     flex-grow: 1;
     min-height: 60px;
     margin-top: 2px;
     margin-bottom: 6px;
 }
 
-.ripple-generate {
+.ripple-generator__generate {
     height: 28px;
     margin-top: 6px;
 }

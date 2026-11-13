@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:VisualElement class="ripple-row">
+        <ui:Image class="ripple-debugger__icon">
+            <Bindings>
+                <ui:DataBinding property="image" data-source-path="Icon" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Image>
+        <ui:Label text="Health">
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="Name" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Label>
+    </ui:VisualElement>
+</ui:UXML>

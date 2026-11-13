@@ -4,6 +4,11 @@
   "displayName": "Ripple",
   "description": "Lazy ScriptableObject framework",
   "unity": "6000.0",
+  "dependencies": {
+    "com.unity.modules.audio": "1.0.0",
+    "com.unity.modules.jsonserialize": "1.0.0",
+    "com.unity.modules.uielements": "1.0.0"
+  },
   "keywords": [
     "tools",
     "extensions",

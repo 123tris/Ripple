@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <ui:Template name="VariableEditor" src="../VariableEditor.uxml" />
+    <ui:Instance template="VariableEditor" data-source="project://database/Packages/com.metz.ripple/Editor/Preview/RipplePreview.asset?fileID=11400000&amp;guid=a72b4deca0304acdad982c4833b0ddf3&amp;type=2#RipplePreview">
+        <ui:AttributeOverrides element-name="debug" value="true" />
+    </ui:Instance>
+</ui:UXML>

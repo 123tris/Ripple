@@ -1,7 +1,6 @@
 using System;
 using System.Reflection;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 namespace Ripple
@@ -19,15 +18,14 @@ namespace Ripple
             row = root.Q("raiseRow");
             root.Q<Button>("raise").clicked += Raise;
 
+            VisualElement slot = root.Q("argument");
+            slot.Clear();
             if (type != null)
                 argument = ValueField.Create(type, null);
-            if (argument != null)
-            {
-                argument.AddToClassList("ripple-grow");
-                root.Q("argument").Add(argument);
-            }
+            if (argument == null) return;
 
-            root.Q<Foldout>("debug").Add(new PropertyField(serializedObject.FindProperty("clearListenersOnPlaymode"), "Clear Listeners On Play"));
+            argument.AddToClassList("ripple-grow");
+            slot.Add(argument);
         }
 
         protected override void Show(bool playing) => row.SetEnabled(playing);

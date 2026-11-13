@@ -48,8 +48,7 @@ namespace Ripple
 
     public abstract class GameEvent : RippleStackTraceSO
     {
-        [SerializeField, Tooltip("Drop the listeners added from code each time play mode starts. For projects that enter play mode without a domain reload.")]
-        protected bool clearListenersOnPlaymode;
+        [SerializeField] protected bool clearListenersOnPlaymode;
 
         private Action listeners;
 

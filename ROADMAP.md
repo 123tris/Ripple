@@ -97,7 +97,7 @@ Everything below is on `feature/0.3.0`.
 
 | Candidate | What shipped |
 | --- | --- |
-| UI Toolkit editor | Every inspector, drawer and window. Layout in UXML documents the scripts reference, one stylesheet. |
+| UI Toolkit editor | Every inspector, drawer and window. Layout in UXML documents the scripts reference, one stylesheet. Each document opens in UI Builder looking almost like the real inspector: editor theme, bound fields, `ReferenceField` and `SignalField` controls with stand-ins, states as root classes, and sample rows in the tables. |
 | No Odin requirement | No Odin attributes in the runtime and no define constraint on the assemblies. |
 | String and Color built in | Variable, reference, event, list and listeners for both. |
 | Per-instance variables | `LocalVariables` component. It copies the variables it lists the first time something asks, so script order does not matter. `variable.For(this)` returns the copy, or the shared asset when there is none. `VariableListener` calls it in `Awake`. |
@@ -111,8 +111,17 @@ Everything below is on `feature/0.3.0`.
 
 Checked on 2026-11-14:
 
-- 49 tests pass in Unity 6000.0.26f1 without Odin and in 6000.3.17f1 with Odin, including one test per asset type that builds its inspector.
-- A scripted run in 6000.0.26f1, with and without Odin, captured the inspectors and both windows in edit and play mode. It checked the live value of every built-in type in both directions, the raise-list warning appearing and clearing, the Debugger keeping its selection through a project change and a search, fields that take any event in play mode, and both Raise buttons.
+- 87 tests pass in Unity 6000.0.26f1 without Odin and in 6000.3.17f1 with Odin. They include one test per asset type that builds its inspector, one per document that fails on a `PropertyField`, and one per document that checks every table column has its cell template.
+- The same 87 pass in a new 6000.0 project, which imports Ripple in the order a first install does. Its manifest leaves out the audio module, and Ripple's own dependency brings it in.
+- A scripted run in 6000.0.26f1, with and without Odin, captured the inspectors and both windows in edit and play mode. It checked:
+  - the live value of every built-in type in both directions;
+  - the state classes as clamping, persisting and play mode change;
+  - a reference switching between constant and variable;
+  - the bound cells of every table;
+  - the raise-list warning appearing and clearing;
+  - the Debugger keeping its selection through a project change, a search and a click on a group;
+  - fields that take any event in play mode, and both Raise buttons.
+- A scripted run opened every inspector, window and preview document in UI Builder 6000.0.26f1 with the editor theme. None has a `PropertyField`, the controls show their stand-ins, and the two previews fill their tables from the sample asset.
 - The package compiles against 6000.5.7f1 in the JamKit host project with JamKit on top, and the runtime compiles without the editor defines.
 
 To release:
@@ -123,6 +132,7 @@ To release:
    - Click a line of a call stack in the Debug foldout.
    - Pick an `IntEvent` into the `Also Raise` list of a float Signal by hand, and see the warning.
    - Double-click a row of the Debugger's log.
+   - Edit a document in UI Builder and save it. Check that the Builder keeps the `ui:Template` lines that declare cell and row documents.
 2. Merge `feature/0.3.0` into `main`, tag `v0.3.0`, delete the branch.
 3. In JamKit:
    - Pin `v0.3.0`.
@@ -153,6 +163,7 @@ Nothing here is scheduled. Each item is a gap seen while building 0.3.0 and wait
 - **List items edited in the inspector.** In play mode they change without raising `OnItemAdded` or `OnItemRemoved`. Code that sets an item does raise them.
 - **Code subscribed through a Signal.** `Listeners` shows code that subscribed with `AddListener`. Code that used `+=` on a Signal, such as `variable.OnValueChanged += …`, is not listed.
 - **Variables keep code listeners across play sessions** when domain reload is off. Events have `Clear Listeners On Play`; variables do not.
+- **The Debugger's asset tree is empty in UI Builder.** Code fills it, so the preview shows the log only. `Editor/Rows/AssetRow.uxml` shows one row on its own.
 
 ### Not doing
 

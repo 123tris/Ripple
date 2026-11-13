@@ -13,11 +13,9 @@ namespace Ripple
 
         [SerializeField] private T _initialValue;
 
-        [SerializeField, Tooltip("Save the value to PlayerPrefs on change and restore it next session. Avoid on per-frame variables, every change writes.")]
-        private bool _persist;
+        [SerializeField] private bool _persist;
 
-        [SerializeField, Tooltip("PlayerPrefs key. Leave empty to use the asset name.")]
-        private string _persistKey;
+        [SerializeField] private string _persistKey;
 
         public Signal<T> OnValueChanged = new();
 

@@ -9,8 +9,6 @@ namespace Ripple
     [CustomEditor(typeof(VariableListSO), true), CanEditMultipleObjects]
     public class VariableListEditor : RippleEditor
     {
-        private VisualElement initial;
-        private VisualElement live;
         private ListView values;
         private IList items;
         private int shown;
@@ -19,8 +17,6 @@ namespace Ripple
         {
             Type type = target.GetType().ArgumentOf(typeof(VariableListSO<>));
             items = (IList)((BaseVariable)target).Value;
-            initial = root.Q("initial");
-            live = root.Q("live");
 
             values = root.Q<ListView>("values");
             values.itemsSource = items;
@@ -34,12 +30,6 @@ namespace Ripple
             };
 
             root.Q<Button>("reset").clicked += () => ((BaseVariable)target).ResetValue();
-        }
-
-        protected override void Show(bool playing)
-        {
-            initial.EnableInClassList(RippleStyle.Hidden, playing);
-            live.EnableInClassList(RippleStyle.Hidden, !playing);
         }
 
         protected override void Tick()

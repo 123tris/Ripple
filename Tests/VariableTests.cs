@@ -183,7 +183,7 @@ namespace Ripple.Tests
 
             Assert.AreEqual(1, numbers.Invokers.Count);
             Assert.AreEqual(2, numbers.Invokers[0].Count);
-            Assert.AreEqual("- 4", numbers.Invokers[0].LastValue);
+            Assert.AreEqual("- 4", numbers.Invokers[0].Value);
             StringAssert.Contains(nameof(List_RecordsWhoChangedIt), numbers.Invokers[0].Caller);
         }
 

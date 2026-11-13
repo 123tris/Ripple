@@ -5,6 +5,9 @@
 ### Editor
 
 - The editor is UI Toolkit. Every inspector and window is a UXML document next to its script in `Editor/`, assigned to the script as a default reference, and all of them share `Editor/Ripple.uss`.
+- Every document opens in UI Builder looking almost like the inspector it draws, once the canvas uses the editor theme. Fields are concrete controls bound by `binding-path`, with their tooltips in the UXML, and `ReferenceField` and `SignalField` are controls that show a stand-in in the Builder.
+- What shows in each state is decided by classes on the document root, such as `ripple-editor--playing` and `ripple-variable--clamped`, and the stylesheet. The scripts only switch the classes.
+- The Debug tables, the Debugger's log and tree and the Type Generator's list take their cells and rows from small documents in `Editor/Cells/` and `Editor/Rows/`, bound with data binding. `Editor/Preview/` shows them filled with sample rows.
 - Odin Inspector is no longer required. The runtime has no Odin attributes and the assemblies no longer wait for the `ODIN_INSPECTOR` define. With Odin installed, the asset inspectors are still Ripple's own, and the reference and Signal drawers show inside Odin-drawn components.
 - Variable inspector: notes, the value, `Clamp` with `Min` and `Max`, `Persist`, the Signal, then a Debug foldout. In play mode the value field shows and edits the live value and a `Reset` button appears.
 - Event inspector: a `Raise` button with a field for the value, enabled in play mode.
@@ -32,6 +35,7 @@
 
 - Clamping no longer throws when `Min` is greater than `Max`.
 - `PreviousValue` is the start value until the first change, for value types too.
+- The package declares the built-in modules it uses (audio, JSON serialize, UI Toolkit), so it compiles in a project that disabled them.
 
 ### Breaking
 
