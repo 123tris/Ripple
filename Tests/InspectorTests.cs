@@ -12,7 +12,7 @@ namespace Ripple.Tests
     public class InspectorTests
     {
         private static IEnumerable<Type> AssetTypes() =>
-            TypeCache.GetTypesWithAttribute<RippleData>().Where(type => !type.IsAbstract && !type.IsGenericType);
+            TypeCache.GetTypesDerivedFrom<RippleStackTraceSO>().Where(type => !type.IsAbstract && !type.IsGenericType);
 
         [Test]
         public void EveryAssetType_HasAnInspectorBuiltFromItsLayout([ValueSource(nameof(AssetTypes))] Type type)

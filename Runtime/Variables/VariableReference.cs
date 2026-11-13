@@ -67,6 +67,12 @@ namespace Ripple
 
         public Vector3Reference() { }
     }
+    [Serializable] public class Vector2Reference : VariableReference<Vector2>
+    {
+        public Vector2Reference(Vector2 value) : base(value) { }
+
+        public Vector2Reference() { }
+    }
     [Serializable] public class GameObjectReference : VariableReference<GameObject> { }
 
     [Serializable]

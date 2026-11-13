@@ -52,8 +52,8 @@ namespace Ripple
         [SerializeField]
         private UnityEvent<T> response = new();
 
-        [SerializeField, Tooltip("Ripple events raised with the same value alongside the response.")]
-        private GameEvent<T>[] raise = Array.Empty<GameEvent<T>>();
+        [SerializeField, Tooltip("Ripple events raised alongside the response. An event of this type gets the value, a void event is raised without it.")]
+        private GameEvent[] raise = Array.Empty<GameEvent>();
 
         private Action<T> listeners;
 
@@ -64,7 +64,7 @@ namespace Ripple
         public void Invoke(T value)
         {
             response.Invoke(value);
-            foreach (GameEvent<T> gameEvent in raise)
+            foreach (GameEvent gameEvent in raise)
                 gameEvent.Raise(value);
             listeners?.Invoke(value);
         }

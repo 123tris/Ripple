@@ -32,7 +32,7 @@ namespace Ripple
         }
 #endif
 
-        internal virtual UnityEventBase SerializedResponse => null;
+        internal virtual IEnumerable<UnityEventBase> SerializedResponses => Array.Empty<UnityEventBase>();
 
         protected void LogInvoke<T>(T parameter, UnityEngine.Object sender = null)
         {
@@ -70,6 +70,7 @@ namespace Ripple
             {
                 var method = stackTrace.GetFrame(i)?.GetMethod();
                 if (method == null || IsPlumbing(method.DeclaringType)) continue;
+                if (method.DeclaringType?.Namespace?.StartsWith("UnityEngine.UIElements") == true) return "UI Toolkit";
                 return (method.DeclaringType?.FullName ?? "(global)") + "->" + method.Name;
             }
 

@@ -9,7 +9,7 @@ Rules for any change:
 - **One way to do a thing.** One event type (`Signal`), one variable base, one listener per kind. A second mechanism for the same job is removed, not kept for compatibility.
 - **Use Unity before writing anything.** `UnityEvent`, `TypeCache`, UI Toolkit and its bindings, `PropertyField` for anything serialized. No third-party dependency.
 - **Layout in UXML, behaviour in C#.** An inspector or window is a UXML document, assigned to its script as a default reference. Fields are placed by `binding-path`. Code is only for what a document cannot do: live values, tables, buttons.
-- **Small enough to read in one sitting.** The package is about 2,300 lines of C# and 200 of UXML and USS. A feature that needs its own subsystem (dispatcher, sink, registry of registries) is the wrong shape.
+- **Small enough to read in one sitting.** The package is about 2,400 lines of C# and 200 of UXML and USS. A feature that needs its own subsystem (dispatcher, sink, registry of registries) is the wrong shape.
 - **A feature lands when a real project needed it**, and in the smallest form that solves that project's problem.
 - **No comments.** Names carry the meaning. Reasons go in the changelog.
 
@@ -34,7 +34,7 @@ Every branch below was an attempt at a real need. The need is kept where it hold
 | `random-variables` | A reference that returns a random value in a range | Dropped from Ripple. A reference is "constant or variable"; a third mode makes every reference field wider. If a jam needs it, it is a small struct in JamKit. |
 | `feature/variable-declaration` | Per-object variables: a declaration asset plus an instancer component holding a value per GameObject | **Need kept** as `LocalVariables` in 0.3.0. The implementation stored untyped `object` values in a dictionary. |
 | `feature/command-system` | `[SerializeReference]` command lists with conditions, run from an asset | Dropped. A `Signal` already runs a list of actions from the inspector, and branching belongs in code. |
-| `feature/refactor-v1` | Color, String and Quaternion types; event groups; settings provider; factory; `Unit`; reference-usage search; richer logger; tests | Types: covered by the Type Generator, with String and Color built in since 0.3.0. Event groups: covered by a Signal's raise list. Usage search: covered by `Scan Listeners`. Tests: kept as an idea, `Tests/` now exists. The rest dropped. |
+| `feature/refactor-v1` | Color, String and Quaternion types; event groups; settings provider; factory; `Unit`; reference-usage search; richer logger; tests | Types: covered by the Type Generator, with String and Color built in since 0.3.0. Event groups: covered by a Signal's raise list. Usage search: covered by `Listeners` in the Debug foldout. Tests: kept as an idea, `Tests/` now exists. The rest dropped. |
 | `v2-redesign` (and the unpushed "v3 overhaul" commit) | Ground-up rewrite: channels and a dispatcher, generated code for every built-in type, diagnostics sinks, traits and validators, snapshots, per-frame coalescing, instancers, a debugger window, a project validator | Dropped as a whole. It is 6,000 lines against 2,000 to deliver the same variables and events. Three ideas survive in smaller form, all in 0.3.0: instancers as `LocalVariables`, one debugger window, and drag-an-asset-onto-an-object to create its listener. |
 | `feature/abstraction+runtime-registry` | Listener scan, runtime subscriber registry, PlayerPrefs persistence, draggable reference label | Merged. All of it is in 0.2.0. |
 
@@ -55,13 +55,30 @@ Pull request 3 (`XRJapan:main` into `main`, "Sync hotfixes") is 22 commits of fi
 | The logger filled bottom-up and could not be cleared | Reverse order, Clear button | The Debugger's log is a table, newest first, with a Clear button. |
 | Project code could not reuse the menu paths | `Config` made public | `Config` is public, in its own file. |
 | Tools were scattered at the top of the Tools menu | `Tools/Ripple/` | Same. |
-| `GameObjectVariableSO` missing from the wizard | `[RippleData]` added | Added, and on the four event types that also lacked it. |
+| `GameObjectVariableSO` missing from the wizard | `[RippleData]` added | The Debugger finds every Ripple asset by its base class, so no type can be left out. `[RippleData]` is obsolete since 0.3.0. |
 
 Ripple's Unity floor is 6000.0, below the AVR projects (6000.1 and 6000.3). JamKit requires 6000.6 on its own; Ripple does not follow it. Keep Ripple free of APIs newer than its floor, and compile it against a 6000.0 editor before raising it.
 
 The pull request also left TODOs to move the Odin attributes out of the runtime. Done in 0.3.0: the editor is UI Toolkit and nothing in the package references Odin.
 
 Moving an AVR project to 0.2.0 also means re-wiring UltEvent responses on its event and listener assets, because UltEvent data does not convert to `UnityEvent`. That is the real cost of the upgrade and should be scheduled, not slipped into a hotfix.
+
+## Direction
+
+Reviewed on 2026-11-14, after fields that take any event were built.
+
+**Where it is going.** Ripple started as variables and events wired in the inspector. With local variables and fields that take any event it is becoming the data layer for logic that designers build: a graph node holds a variable or event asset and resolves it against the object that runs it. That is the road Hipple took with declarations and an instancer. Ripple keeps one difference worth keeping: the asset is both the global and the declaration, so there is no second asset type to learn.
+
+**Scope.** 0.3.0 was planned as five small candidates. It now also holds the editor rewrite, the removal of Odin and fields that take any event, roughly three times the change. All of it is tested by script in Unity, none of it by hand, and JamKit still pins 0.2.0 while its host project compiles this branch. **0.3.0 is frozen.** Anything not in the table below waits for 0.4.0.
+
+**Type safety.** A field that takes any event moves one check from compile time to run time. A typed reference still refuses a value of another type at compile time, and a Signal's raise list warns in the inspector. A `GameEvent` field on a project's own script cannot be checked before it runs; the exception names both types.
+
+**Limits to state, not to fix yet.**
+
+- A local copy is a full ScriptableObject: right for tens of objects, too heavy for hundreds of bullets. A project with that many copies needs a lighter backing for them, not a second component.
+- Debugging cost grows with how often a value changes. JamKit's `GameTimer` writes its variable every frame, which means a stack walk per change and 60 log entries a second. The log keeps the newest 10,000; `Disable Logging` on such a variable is the answer.
+
+**Odin.** Ripple no longer needs it, so JamKit is the only reason a project does. Moving JamKit's own inspectors to UI Toolkit is a JamKit decision and is not scheduled.
 
 ## Next
 
@@ -87,26 +104,35 @@ Everything below is on `feature/0.3.0`.
 | Signals on lists | `OnItemAdded` and `OnItemRemoved` are `Signal<T>`. |
 | Drag to listen | A drop handler for the Hierarchy and the inspector. Uses the `EntityId` handlers from Unity 6000.3 on, the older ones below. |
 | One debug window | `Tools > Ripple > Debugger`. The Event Logger and the Wizard are removed. |
+| Fields that take any event | `GameEvent` has `AddListener(Action)`, `RemoveListener(Action)` and `Raise(value)`. `Event Listener Void` and a Signal's raise list take any event. The inspector warns about an event a Signal cannot raise. |
+| Vector2 complete | `Vector2VariableSO` and `Vector2Reference`. |
+| Lists in the debug tools | Lists fill `Raised By` and the log with `+ item` and `- item`. `Listeners` shows the responses on both list Signals. |
+| Fixes from the review | Clamping no longer throws on an inverted range. Setting a list item raises its events. `PreviousValue` starts at the start value. Local copies never persist. The log keeps the newest 10,000 entries. `Logger`, the connection registry and `IVariable` left the public API. |
 
-Checked so far: the tests pass in Unity 6000.0.26f1 without Odin and in 6000.3.17f1 with Odin, including one test per asset type that builds its inspector. Every inspector and both windows were captured in edit and play mode in 6000.0.26f1, with and without Odin. The package compiles against 6000.5.7f1 in the JamKit host project, with JamKit on top.
+Checked on 2026-11-14:
+
+- 49 tests pass in Unity 6000.0.26f1 without Odin and in 6000.3.17f1 with Odin, including one test per asset type that builds its inspector.
+- A scripted run in 6000.0.26f1, with and without Odin, captured the inspectors and both windows in edit and play mode. It checked the live value of every built-in type in both directions, the raise-list warning appearing and clearing, the Debugger keeping its selection through a project change and a search, fields that take any event in play mode, and both Raise buttons.
+- The package compiles against 6000.5.7f1 in the JamKit host project with JamKit on top, and the runtime compiles without the editor defines.
 
 To release:
 
-1. Try the three things only a mouse can check: drag an event asset onto a GameObject, open the menu at the end of a reference field, click a line of a call stack in the Debug foldout.
+1. Try what only a mouse can check:
+   - Drag an event asset onto a GameObject.
+   - Open the menu at the end of a reference field.
+   - Click a line of a call stack in the Debug foldout.
+   - Pick an `IntEvent` into the `Also Raise` list of a float Signal by hand, and see the warning.
+   - Double-click a row of the Debugger's log.
 2. Merge `feature/0.3.0` into `main`, tag `v0.3.0`, delete the branch.
-3. In JamKit, pin `v0.3.0` and let `Health` resolve its variable with `CurrentVariable.For(this)`, so the "leave empty when several objects share this prefab" caveat goes away.
+3. In JamKit:
+   - Pin `v0.3.0`.
+   - Let `Health` resolve its variable with `CurrentVariable.For(this)`, so the "leave empty when several objects share this prefab" caveat goes away.
+   - Make a Game Flow transition's `On` a `GameEvent`, so any event can drive a scene change.
+   - Have the wizard tick `Disable Logging` on the timer's variable, which changes every frame.
 
-### Proposed, waiting for a yes
+### Proposed for 0.4.0, waiting for a yes
 
-These come from comparing Ripple with Ryan Hipple's own system (variable declarations, an instancer, and a value that is a literal, a global variable or an instanced variable) and from asking where interfaces with `[SerializeReference]` would help. None is built.
-
-**One field for any event.** A script or a graph node often needs only "some event". To listen, it does not care whether the event carries a value. To raise, it is happy to pass its value along or not.
-
-- `GameEvent`, the base class of every event asset, gets a plain `Raised` event and `Raise<T>(T value)`. `Raise` passes the value on when the asset is a `GameEvent<T>` and raises plainly when it is a `VoidEventSO`.
-- A field typed `GameEvent` then takes any event asset in the stock object picker. No drawer and no wrapper type.
-- `[SerializeReference]` is the wrong tool for this one. The two cases already share a base class, an asset cannot be assigned to an interface field, and a wrapper per case would put a type picker in front of a field that only needs an object picker.
-- First users: the `On` event of a JamKit Game Flow transition, and a void event in the raise list of a `Signal<T>`.
-- Open question: what happens when the field holds an event of another value type, such as an `IntEvent` raised with a float. Proposal: an exception that names both types.
+These come from comparing Ripple with Ryan Hipple's own system (variable declarations, an instancer, and a value that is a literal, a global variable or an instanced variable) and from asking where interfaces with `[SerializeReference]` would help. A fourth proposal, fields that take any event, was built in 0.3.0. None of these three is built.
 
 **Local variables with their own starting value.** Hipple's instancer lets each object override the initial value (100 health on one enemy, 300 on the boss). `LocalVariables` copies the asset as it is.
 
@@ -116,16 +142,17 @@ These come from comparing Ripple with Ryan Hipple's own system (variable declara
 
 **References that follow local variables.** Hipple's value type has three modes. Ripple needs no third one, because the same asset is local wherever a `LocalVariables` component lists it. Smallest form: `reference.For(this)` in `Awake`, like `variable.For(this)`.
 
-**Graph nodes on local variables.** With the three above, a Graph Toolkit node can hold a variable or event asset as an option and resolve it against the object that runs the graph: "if this enemy's `Health` is below 50". The asset is the key and the runner's `LocalVariables` is the instancer. The nodes belong in JamKit, next to Game Flow. Ripple only has to keep `For` cheap.
+**Graph nodes on local variables.** With the two above and fields that take any event, a Graph Toolkit node can hold a variable or event asset as an option and resolve it against the object that runs the graph: "if this enemy's `Health` is below 50". The asset is the key and the runner's `LocalVariables` is the instancer. The nodes belong in JamKit, next to Game Flow. Ripple only has to keep `For` cheap.
 
 ### After 0.3.0
 
 Nothing here is scheduled. Each item is a gap seen while building 0.3.0 and waits for a project that hits it.
 
-- **Vector2 has an event and a variable listener but no variable.** Add `Vector2VariableSO` or remove `VariableListenerVector2`.
-- **Lists in the debug tools.** A list does not fill `Raised By`, and `Listeners` does not read the responses wired on its two Signals.
 - **Live values of custom types.** In play mode the value field edits the built-in types. A type from the Type Generator shows its `ToString()` and cannot be edited there.
 - **An empty reference in variable mode reads "None (Base Variable`1)".** That is how Unity names the generic field type.
+- **List items edited in the inspector.** In play mode they change without raising `OnItemAdded` or `OnItemRemoved`. Code that sets an item does raise them.
+- **Code subscribed through a Signal.** `Listeners` shows code that subscribed with `AddListener`. Code that used `+=` on a Signal, such as `variable.OnValueChanged += …`, is not listed.
+- **Variables keep code listeners across play sessions** when domain reload is off. Events have `Clear Listeners On Play`; variables do not.
 
 ### Not doing
 

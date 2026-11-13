@@ -96,7 +96,6 @@ namespace Ripple
             Directory.CreateDirectory(directory);
 
             Write(Parts.Variable, directory, $"{name}VariableSO",
-                "[RippleData]",
                 $"[CreateAssetMenu(menuName = Config.VariableMenu + \"{name}\")]",
                 $"public class {name}VariableSO : VariableSO<{value}> {{ }}",
                 "",
@@ -113,7 +112,6 @@ namespace Ripple
                 $"public class VariableListener{name} : VariableListener<{value}> {{ }}");
 
             Write(Parts.Event, directory, $"{name}Event",
-                "[RippleData]",
                 $"[CreateAssetMenu(menuName = Config.EventMenu + \"{name}\")]",
                 $"public class {name}Event : GameEvent<{value}> {{ }}");
 
@@ -122,7 +120,6 @@ namespace Ripple
                 $"public class EventListener{name} : EventListener<{value}> {{ }}");
 
             Write(Parts.List, directory, $"{name}ListSO",
-                "[RippleData]",
                 $"[CreateAssetMenu(menuName = Config.VariableListMenu + \"{name}\")]",
                 $"public class {name}ListSO : VariableListSO<{value}> {{ }}");
 

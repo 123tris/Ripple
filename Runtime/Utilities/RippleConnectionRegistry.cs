@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Ripple
 {
-    public readonly struct SubscriberInfo
+    internal readonly struct SubscriberInfo
     {
         public readonly WeakReference<object> Target;
         public readonly string MethodName;
@@ -18,7 +18,7 @@ namespace Ripple
         }
     }
 
-    public static class RippleConnectionRegistry
+    internal static class RippleConnectionRegistry
     {
 #if UNITY_EDITOR
         private struct Entry

@@ -140,6 +140,99 @@ namespace Ripple.Tests
             Assert.AreSame(score, score.For(child));
         }
 
+        [Test]
+        public void LocalVariables_CopiesDoNotPersist()
+        {
+            var health = Create<FloatVariableSO>();
+            health.name = "RippleTestHealth";
+            var serialized = new SerializedObject(health);
+            serialized.FindProperty("_persist").boolValue = true;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            FloatVariableSO copy = health.For(CreateWithLocal(health));
+            created.Add(copy);
+
+            copy.CurrentValue = 3f;
+
+            bool saved = PlayerPrefs.HasKey(copy.name);
+            PlayerPrefs.DeleteKey(copy.name);
+            Assert.IsFalse(saved);
+        }
+
+        [Test]
+        public void List_IndexerRaisesRemovedThenAdded()
+        {
+            var numbers = Create<IntListSO>();
+            numbers.AddRange(new[] { 1, 2 });
+            var changes = new List<string>();
+            numbers.OnItemAdded += item => changes.Add("+" + item);
+            numbers.OnItemRemoved += item => changes.Add("-" + item);
+
+            numbers[0] = 9;
+
+            CollectionAssert.AreEqual(new[] { 9, 2 }, numbers);
+            CollectionAssert.AreEqual(new[] { "-1", "+9" }, changes);
+        }
+
+        [Test]
+        public void List_RecordsWhoChangedIt()
+        {
+            var numbers = Create<IntListSO>();
+
+            numbers.Add(4);
+            numbers.Remove(4);
+
+            Assert.AreEqual(1, numbers.Invokers.Count);
+            Assert.AreEqual(2, numbers.Invokers[0].Count);
+            Assert.AreEqual("- 4", numbers.Invokers[0].LastValue);
+            StringAssert.Contains(nameof(List_RecordsWhoChangedIt), numbers.Invokers[0].Caller);
+        }
+
+        [Test]
+        public void Clamp_WithInvertedRange_DoesNotThrow()
+        {
+            var speed = Create<FloatVariableSO>();
+            speed._isClamped = true;
+            speed.min = new FloatReference(10f);
+            speed.max = new FloatReference(0f);
+            var lives = Create<IntVariableSO>();
+            lives._isClamped = true;
+            lives.min = new IntReference(3);
+            lives.max = new IntReference(1);
+
+            Assert.DoesNotThrow(() => speed.CurrentValue = 5f);
+            Assert.DoesNotThrow(() => lives.CurrentValue = 2);
+        }
+
+        [Test]
+        public void Vector2Variable_ClampsEachAxis()
+        {
+            var aim = Create<Vector2VariableSO>();
+            aim._isClamped = true;
+            aim.min = new Vector2Reference(Vector2.zero);
+            aim.max = new Vector2Reference(Vector2.one);
+
+            aim.CurrentValue = new Vector2(2f, -1f);
+
+            Assert.AreEqual(new Vector2(1f, 0f), aim.CurrentValue);
+        }
+
+        [Test]
+        public void PreviousValue_IsTheValueBeforeTheLastChange()
+        {
+            var template = Create<IntVariableSO>();
+            var serialized = new SerializedObject(template);
+            serialized.FindProperty("_initialValue").intValue = 5;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            var score = Object.Instantiate(template);
+            created.Add(score);
+
+            Assert.AreEqual(5, score.PreviousValue);
+            score.CurrentValue = 7;
+            score.CurrentValue = 9;
+
+            Assert.AreEqual(7, score.PreviousValue);
+        }
+
         private Transform CreateWithLocal(BaseVariable variable)
         {
             var root = new GameObject("Root", typeof(LocalVariables));

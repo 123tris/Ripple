@@ -36,11 +36,11 @@ namespace Ripple
             set => SetCurrentValue(value);
         }
 
-        public T PreviousValue => _previousValue ?? _initialValue;
+        public T PreviousValue => _previousValue;
 
         public override object Value => _currentValue;
 
-        internal override UnityEventBase SerializedResponse => OnValueChanged.Response;
+        internal override IEnumerable<UnityEventBase> SerializedResponses => new UnityEventBase[] { OnValueChanged.Response };
 
         public virtual void SetCurrentValue(T value, UnityEngine.Object sender = null)
         {
@@ -73,7 +73,17 @@ namespace Ripple
             if (!Application.isPlaying) Restore();
         }
 
-        protected override void Restore() => _currentValue = StartValue;
+        protected override void Restore()
+        {
+            _currentValue = StartValue;
+            _previousValue = _currentValue;
+        }
+
+        internal override void MakeLocal()
+        {
+            _persist = false;
+            Restore();
+        }
 
         [Serializable] private struct PersistBox { public T Value; }
 
@@ -114,6 +124,8 @@ namespace Ripple
         public abstract void ResetValue();
 
         public virtual void ClearSavedValue() { }
+
+        internal virtual void MakeLocal() { }
 
         protected abstract void Restore();
 

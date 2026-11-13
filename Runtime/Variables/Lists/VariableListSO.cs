@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 namespace Ripple
@@ -26,16 +27,24 @@ namespace Ripple
 
         public bool IsReadOnly => false;
 
+        internal override IEnumerable<UnityEventBase> SerializedResponses => new UnityEventBase[] { OnItemAdded.Response, OnItemRemoved.Response };
+
         public T this[int index]
         {
             get => _currentValue[index];
-            set => _currentValue[index] = value;
+            set
+            {
+                T replaced = _currentValue[index];
+                _currentValue[index] = value;
+                Removed(replaced);
+                Added(value);
+            }
         }
 
         public void Add(T item)
         {
             _currentValue.Add(item);
-            OnItemAdded.Invoke(item);
+            Added(item);
         }
 
         public void AddRange(IEnumerable<T> items)
@@ -47,13 +56,13 @@ namespace Ripple
         public void Insert(int index, T item)
         {
             _currentValue.Insert(index, item);
-            OnItemAdded.Invoke(item);
+            Added(item);
         }
 
         public bool Remove(T item)
         {
             if (!_currentValue.Remove(item)) return false;
-            OnItemRemoved.Invoke(item);
+            Removed(item);
             return true;
         }
 
@@ -61,7 +70,7 @@ namespace Ripple
         {
             T item = _currentValue[index];
             _currentValue.RemoveAt(index);
-            OnItemRemoved.Invoke(item);
+            Removed(item);
         }
 
         public void Resize(int count)
@@ -92,6 +101,25 @@ namespace Ripple
         {
             _currentValue.Clear();
             _currentValue.AddRange(_initialValues);
+        }
+
+        private void Added(T item)
+        {
+            Record("+ ", item);
+            OnItemAdded.Invoke(item);
+        }
+
+        private void Removed(T item)
+        {
+            Record("- ", item);
+            OnItemRemoved.Invoke(item);
+        }
+
+        private void Record(string change, T item)
+        {
+#if UNITY_EDITOR
+            RecordInvoke(ResolveCaller(null), null, change + item);
+#endif
         }
     }
 }

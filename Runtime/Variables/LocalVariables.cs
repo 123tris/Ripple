@@ -19,6 +19,7 @@ namespace Ripple
 
             copy = Instantiate(variable);
             copy.name = $"{variable.name} ({name})";
+            copy.MakeLocal();
             copies.Add(variable, copy);
             return (T)copy;
         }

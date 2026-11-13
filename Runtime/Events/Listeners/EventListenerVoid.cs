@@ -6,7 +6,8 @@ namespace Ripple
     [AddComponentMenu(Config.EventListenerMenu + "Event Listener Void")]
     public class EventListenerVoid : MonoBehaviour, IRippleListener
     {
-        [SerializeField] private VoidEventSO _event;
+        [SerializeField, Tooltip("Any event. The value of a typed event is ignored.")]
+        private GameEvent _event;
 
         [SerializeField] private Signal _response = new();
 

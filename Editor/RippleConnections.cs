@@ -26,12 +26,12 @@ namespace Ripple
         {
             var found = new List<Listener>();
 
-            UnityEventBase response = asset.SerializedResponse;
-            for (int i = 0; response != null && i < response.GetPersistentEventCount(); i++)
-            {
-                Object target = response.GetPersistentTarget(i);
-                found.Add(new Listener("Response", (target ? NameOf(target) : "(missing)") + " → " + response.GetPersistentMethodName(i), target));
-            }
+            foreach (UnityEventBase response in asset.SerializedResponses)
+                for (int i = 0; i < response.GetPersistentEventCount(); i++)
+                {
+                    Object target = response.GetPersistentTarget(i);
+                    found.Add(new Listener("Response", (target ? NameOf(target) : "(missing)") + " → " + response.GetPersistentMethodName(i), target));
+                }
 
             foreach (SubscriberInfo subscriber in RippleConnectionRegistry.GetSubscribers(asset))
                 found.Add(Subscriber(subscriber));

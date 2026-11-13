@@ -3,8 +3,10 @@ using System.Diagnostics;
 
 namespace Ripple
 {
-    public static class Logger
+    internal static class Logger
     {
+        private const int Capacity = 10000;
+
         private static readonly List<LogEntry> logs = new();
 
         public static IReadOnlyList<LogEntry> Logs => logs;
@@ -23,11 +25,15 @@ namespace Ripple
         public static void ResetLogs() => logs.Clear();
 
         [Conditional("UNITY_EDITOR")]
-        public static void Log(UnityEngine.Object context, string caller, string value, string time) =>
+        public static void Log(UnityEngine.Object context, string caller, string value, string time)
+        {
+            if (logs.Count == Capacity)
+                logs.RemoveAt(0);
             logs.Add(new LogEntry { context = context, caller = caller, value = value, time = time });
+        }
     }
 
-    public class LogEntry
+    internal class LogEntry
     {
         public UnityEngine.Object context;
         public string caller;

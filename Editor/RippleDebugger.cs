@@ -14,6 +14,7 @@ namespace Ripple
         private const string Log = "Log";
 
         [SerializeField] private VisualTreeAsset layout;
+        [SerializeField] private string selected = Log;
 
         private readonly List<LogEntry> shown = new();
         private readonly Dictionary<string, int> ids = new();
@@ -21,7 +22,7 @@ namespace Ripple
         private TreeView assets;
         private ScrollView inspector;
         private string filter = "";
-        private int logged = -1;
+        private LogEntry newest;
 
         [MenuItem("Tools/Ripple/Debugger")]
         private static void Open() => GetWindow<RippleDebugger>("Ripple Debugger").minSize = new Vector2(480, 200);
@@ -43,23 +44,19 @@ namespace Ripple
             Fill("caller", entry => entry.caller);
             Fill("value", entry => entry.value);
             log.selectionChanged += _ => EditorGUIUtility.PingObject((log.selectedItem as LogEntry)?.context);
-            log.itemsChosen += _ =>
-            {
-                if (log.selectedItem is LogEntry entry && ids.TryGetValue(AssetDatabase.GetAssetPath(entry.context), out int id))
-                    assets.SetSelectionById(id);
-            };
+            log.itemsChosen += chosen => Reveal((LogEntry)chosen.First());
 
             inspector = root.Q<ScrollView>("inspector");
             assets = root.Q<TreeView>("assets");
-            assets.makeItem = () => new Label();
-            assets.bindItem = (element, index) => ((Label)element).text = Path.GetFileNameWithoutExtension(assets.GetItemDataForIndex<string>(index));
-            assets.selectionChanged += _ => Inspect(AssetDatabase.LoadMainAssetAtPath(assets.selectedItem as string));
+            assets.makeItem = MakeRow;
+            assets.bindItem = (row, index) => BindRow(row, assets.GetItemDataForIndex<string>(index));
+            assets.selectionChanged += _ => Select(assets.selectedItem as string);
 
             root.Q<ToolbarButton>("clear").clicked += Logger.ResetLogs;
             root.Q<ToolbarSearchField>("search").RegisterValueChangedCallback(change =>
             {
                 filter = change.newValue;
-                logged = -1;
+                newest = null;
                 ShowAssets();
             });
 
@@ -78,18 +75,41 @@ namespace Ripple
             log.columns[column].bindCell = (cell, row) => ((Label)cell).text = text(shown[row]);
         }
 
+        private static VisualElement MakeRow()
+        {
+            var row = new VisualElement();
+            row.AddToClassList("ripple-row");
+            var icon = new Image();
+            icon.AddToClassList("ripple-icon");
+            row.Add(icon);
+            row.Add(new Label());
+            return row;
+        }
+
+        private void BindRow(VisualElement row, string item)
+        {
+            bool isAsset = ids.ContainsKey(item);
+            var icon = row.Q<Image>();
+            icon.image = isAsset ? AssetDatabase.GetCachedIcon(item) : item == Log ? EditorGUIUtility.IconContent("UnityEditor.ConsoleWindow").image : null;
+            icon.EnableInClassList(RippleStyle.Hidden, !icon.image);
+            row.Q<Label>().text = isAsset ? Path.GetFileNameWithoutExtension(item) : item;
+        }
+
         private static string NameOf(LogEntry entry) => entry.context ? entry.context.name : "(destroyed)";
 
         private bool Matches(string name) => name.Contains(filter, StringComparison.OrdinalIgnoreCase);
 
+        private bool Matches(LogEntry entry) => Matches(NameOf(entry)) || Matches(entry.caller);
+
         private void ShowLog()
         {
-            if (logged == Logger.Logs.Count) return;
+            LogEntry latest = Logger.Logs.Count == 0 ? null : Logger.Logs[Logger.Logs.Count - 1];
+            if (latest == newest) return;
 
-            logged = Logger.Logs.Count;
+            newest = latest;
             shown.Clear();
-            for (int i = logged - 1; i >= 0; i--)
-                if (Matches(NameOf(Logger.Logs[i])))
+            for (int i = Logger.Logs.Count - 1; i >= 0; i--)
+                if (Matches(Logger.Logs[i]))
                     shown.Add(Logger.Logs[i]);
             log.RefreshItems();
         }
@@ -103,7 +123,7 @@ namespace Ripple
             var groups = AssetDatabase.FindAssets("t:" + nameof(RippleStackTraceSO))
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Where(path => Matches(Path.GetFileNameWithoutExtension(path)))
-                .GroupBy(path => AssetDatabase.GetMainAssetTypeAtPath(path).Name)
+                .GroupBy(path => ObjectNames.NicifyVariableName(AssetDatabase.GetMainAssetTypeAtPath(path).Name))
                 .OrderBy(group => group.Key);
             foreach (IGrouping<string, string> group in groups)
             {
@@ -118,19 +138,32 @@ namespace Ripple
                 items.Add(new TreeViewItemData<string>(groupId, group.Key, children));
             }
 
+            assets.ClearSelection();
             assets.SetRootItems(items);
             assets.Rebuild();
             assets.ExpandAll();
-            assets.SetSelectionById(0);
+            assets.SetSelectionById(ids.TryGetValue(selected, out int id) ? id : 0);
         }
 
-        private void Inspect(UnityEngine.Object asset)
+        private void Select(string item)
         {
+            if (item == null || item != Log && !ids.ContainsKey(item)) return;
+
+            selected = item;
+            UnityEngine.Object asset = item == Log ? null : AssetDatabase.LoadMainAssetAtPath(item);
             log.EnableInClassList(RippleStyle.Hidden, asset);
             inspector.EnableInClassList(RippleStyle.Hidden, !asset);
             inspector.Clear();
             if (asset)
                 inspector.Add(new InspectorElement(asset));
+        }
+
+        private void Reveal(LogEntry entry)
+        {
+            if (ids.TryGetValue(AssetDatabase.GetAssetPath(entry.context), out int id))
+                assets.SetSelectionById(id);
+            else
+                Selection.activeObject = entry.context;
         }
     }
 }

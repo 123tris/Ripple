@@ -2,8 +2,6 @@
 
 namespace Ripple
 {
-    public class RippleData : Attribute
-    {
-
-    }
+    [Obsolete("Ripple no longer reads this attribute. Remove it.")]
+    public class RippleData : Attribute { }
 }

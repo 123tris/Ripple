@@ -64,6 +64,13 @@
     flex-grow: 1;
 }
 
+.ripple-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
 .ripple-assets {
     min-width: 200px;
 }

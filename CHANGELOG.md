@@ -11,26 +11,37 @@
 - List inspector: the initial values in edit mode, the live values in play mode.
 - Debug foldout on every asset: `Raised By` with the time of the last call, the call stack of the selected row with lines that open the file, and `Listeners`, which fills in when the inspector opens. `Include Prefabs` replaces the `Scan prefabs too` toggle.
 - A reference field is one line with a menu at the end to switch between constant and variable. Dragging the label of a number still scrubs it.
-- `Tools > Ripple > Debugger` lists every Ripple asset beside the session log. The log is a table: time, asset, caller, value. Double-clicking a row opens its asset.
+- `Tools > Ripple > Debugger` lists every Ripple asset, with its icon, beside the session log. The log is a table: time, asset, caller, value. It keeps the newest 10,000 entries, and its search matches the asset or the caller. Double-clicking a row opens its asset, or selects a local copy. The selected asset survives a project change and a domain reload.
+- A Signal's `Also Raise` list warns about any event it cannot raise.
 - `Tools > Ripple > Type Generator` finds the type with a search field.
 
 ### Features
 
-- String and Color are built in: variable, reference, event, list and both listeners.
+- A field typed `GameEvent` takes any event. `AddListener(Action)` and `RemoveListener(Action)` hear every raise, and `Raise(value)` passes the value to an event of that type and raises a void event without it. `Event Listener Void` and a Signal's `Also Raise` list take any event the same way.
+- String and Color are built in: variable, reference, event, list and both listeners. `Vector2VariableSO` and `Vector2Reference` complete Vector2.
+- Lists record who changed them: `Raised By` and the Debugger log show `+ item` and `- item`, and `Listeners` shows the responses wired on both list Signals.
 - `LocalVariables` component and `variable.For(this)` give each object its own copy of a variable. Variable listeners below the component use the copy without any code.
 - `OnItemAdded` and `OnItemRemoved` on lists are `Signal<T>`: a list change can call a `UnityEvent` and raise events from the inspector. `+=` and `-=` keep working.
 - Dropping an event or variable asset on a GameObject, in the Hierarchy or on its inspector, adds the matching listener with the asset assigned.
 - `BaseVariable.ClearSavedValue()` forgets the value a persisted variable saved.
 - `VariableListSO` is the non-generic base of every list, the way `GameEvent` is for events.
-- A change made through a UI Toolkit binding is attributed to the binding, not to Unity's property plumbing.
+- A change made through UI Toolkit, such as a bound field, is attributed to `UI Toolkit` instead of Unity's internal types.
+- A local copy starts at the variable's initial value and never persists. Ten enemies no longer write ten PlayerPrefs keys.
+
+### Fixes
+
+- Clamping no longer throws when `Min` is greater than `Max`.
+- `PreviousValue` is the start value until the first change, for value types too.
 
 ### Breaking
 
 - `OnItemAdded` and `OnItemRemoved` are no longer `Action<T>`. Assigning them or calling `?.Invoke` no longer compiles; subscribe with `+=`.
 - `EventLoggerWindow` and `RippleWizard` are removed, with their menu items.
 - Removed with Odin: the `AssetDropdown` attribute and the dropdown it put on every event and variable field, the inline editor that unfolded a variable below a field that references it, and the `Required` marker on listener fields.
-- `Logger.Log` takes the asset, caller, value and time. `Logger.Logs` replaces `GetLogs()` and `onLogAdded`. `LogEntry` has `caller`, `value` and `time` instead of `message`.
-- `RippleConnections` moved to the editor assembly and is internal.
+- `Logger`, `LogEntry`, `RippleConnectionRegistry` and `SubscriberInfo` are internal, and `RippleConnections` moved to the editor assembly. The Debugger window is the way to read the log.
+- `IVariable<T>` is removed. Nothing implemented it.
+- `RippleData` is obsolete. Nothing reads it; remove it from generated types to clear the warning.
+- Setting a list item by index raises `OnItemRemoved` for the old item and `OnItemAdded` for the new one.
 
 ## 0.2.0
 
